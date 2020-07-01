@@ -1,0 +1,13 @@
+service: buyma-app-layer
+
+provider:
+  name: aws
+#  stage: dev
+  region: ap-northeast-1
+
+layers:
+  buymaAppLayers:
+    path: modules
+    description: Scraping layer
+    compatibleRuntimes:
+      - python3.7
