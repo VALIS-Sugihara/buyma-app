@@ -22,17 +22,21 @@ service: buyma-app
 
 provider:
   name: aws
-  runtime: python3.8
+  runtime: python3.7
 # you can overwrite defaults here
   stage: dev
   region: ap-northeast-1
 
 # you can add statements to the Lambda function's IAM Role here
-iamRoleStatements:
-  - Effect: "Allow"
-    Action:
-      - "lambda:InvokeFunction"
-    Resource: "*"
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - "lambda:InvokeFunction"
+      Resource: "*"
+    - Effect: "Allow"
+      Action:
+        - "s3:*"
+      Resource: "*"
 #    - Effect: "Allow"
 #      Action:
 #        - "s3:ListBucket"
@@ -52,21 +56,35 @@ iamRoleStatements:
 #    variable1: value1
 
 # you can add packaging information here
-#package:
+package:
 #  include:
 #    - include-me.py
 #    - include-me-dir/**
-#  exclude:
-#    - exclude-me.py
-#    - exclude-me-dir/**
+ exclude:
+  #  - exclude-me.py
+   - layers/**
 
 functions:
   hello:
     handler: handler.hello
     layers:
       - ${cf:buyma-app-layer-dev.BuymaAppLayersLambdaLayerQualifiedArn}
+      - arn:aws:lambda:ap-northeast-1:291357645530:layer:pandasLayers:1
   test:
     handler: handler.test
+    layers:
+      - ${cf:buyma-app-layer-dev.BuymaAppLayersLambdaLayerQualifiedArn}
+      - arn:aws:lambda:ap-northeast-1:291357645530:layer:pandasLayers:1
+  getItemList:
+    handler: handler.get_item_list
+    layers:
+      - ${cf:buyma-app-layer-dev.BuymaAppLayersLambdaLayerQualifiedArn}
+      - arn:aws:lambda:ap-northeast-1:291357645530:layer:pandasLayers:1
+  getItemDetail:
+    handler: handler.get_item_detail
+    layers:
+      - ${cf:buyma-app-layer-dev.BuymaAppLayersLambdaLayerQualifiedArn}
+      - arn:aws:lambda:ap-northeast-1:291357645530:layer:pandasLayers:1
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
