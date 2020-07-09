@@ -255,14 +255,15 @@ def get_url(event, context):
 
 def merge_s3_files():
     s3 = S3(bucket_name=constants.S3_BUCKET)
-    keys = s3.list_objects(key="trains/")
+    # keys = s3.list_objects(key="trains/")
+    keys = s3.list_objects(key="items/")
     
     print(len(keys))
 
-    with open("/tmp/trains_data.csv", mode="w") as f:
+    # with open("/tmp/trains_data.csv", mode="w") as f:
+    with open("/tmp/items_data.csv", mode="w") as f:
         for key in keys:
             response = s3.get_item(key=key)
             f.write(response["Body"].read().decode("utf-8"))
+            # exit()
 
-
-merge_s3_files()
