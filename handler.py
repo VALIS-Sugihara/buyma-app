@@ -267,3 +267,51 @@ def merge_s3_files():
             f.write(response["Body"].read().decode("utf-8"))
             # exit()
 
+
+def test_get_s3file(event, context):
+
+    s3_bucket = "buyma-app-dev"
+    s3 = S3(s3_bucket)
+
+    file_name = "Lyst.com&margiela.collected.csv"
+    s3.download_item(key="tests/%s" % (file_name,), path="/tmp/%s" % (file_name,))
+
+    df = pd.read_csv("/tmp/%s" % (file_name,))
+    print(df.head())
+
+    for index, row in df.iterrows():
+
+        import time
+        import random
+        # TODO:: for status code 429
+        r = random.randint(1, 5)
+        time.sleep(r)
+
+        payload = {
+            "href": row["href"]
+        }
+        payload = json.dumps(payload)
+        print(payload)
+        response = boto3.client('lambda').invoke(
+            FunctionName='buyma-app-dev-testGetHrefRequests',
+            InvocationType='Event',  # Event or RequestResponse
+            Payload=payload
+        )
+
+    return True
+
+
+def test_get_href_requests(event, context):
+    import socket
+    data = _get_event_data(event)
+
+    _user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+    headers = {'User-Agent': _user_agent}
+    response = requests.get(data["href"], headers=headers)
+    ip = socket.gethostbyname(socket.gethostname())
+    print(ip)
+    print("status_code is ...", response.status_code)
+    print(response.headers)
+    print(response.request.headers)
+
+    return True

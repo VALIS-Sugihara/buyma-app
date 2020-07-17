@@ -70,10 +70,23 @@ functions:
     memorySize: 512
     timeout: 300
     layers:
-      # - ${cf:buyma-app-layer-dev.BuymaAppLayersLambdaLayerQualifiedArn}
-      # - arn:aws:lambda:ap-northeast-1:291357645530:layer:pandasLayers:1
       - ${cf:serverless-selenium-layer-dev.SeleniumLambdaLayerQualifiedArn}
       - ${cf:serverless-selenium-layer-dev.HeadlessLambdaLayerQualifiedArn}
+  testGetS3file:
+    handler: handler.test_get_s3file
+    memorySize: 512
+    timeout: 300
+    layers:
+      - ${cf:buyma-app-layer-dev.BuymaAppLayersLambdaLayerQualifiedArn}
+      - arn:aws:lambda:ap-northeast-1:291357645530:layer:pandasLayers:1
+  testGetHrefRequests:
+    handler: handler.test_get_href_requests
+    timeout: 300
+    memorySize: 512
+    layers:
+      - ${cf:buyma-app-layer-dev.BuymaAppLayersLambdaLayerQualifiedArn}
+      - arn:aws:lambda:ap-northeast-1:291357645530:layer:pandasLayers:1
+      
   hello:
     handler: handler.hello
     layers:
