@@ -85,6 +85,7 @@ class BuymaItems(Malls):
     def compare(cls, target_price: float, prices: [int]):
         active = 1
         for price in prices:
-            if float(target_price) > float(price.replace("¥", "").replace(",", "").strip()):
+            # TODO:: filtered
+            if float(target_price) * 1.2 > float(price.replace("¥", "").replace(",", "").strip()):
                 active = 0
         return active

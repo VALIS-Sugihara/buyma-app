@@ -101,10 +101,10 @@ class Lyst(Curator):
         # timeout 変更
         self.driver._driver.set_page_load_timeout(300)
         self.driver._driver.implicitly_wait(300)
-        for i in range(0, 10):
+        for i in range(0, 50):
         # for i in range(0, 2):  # TEST
             self.driver._driver.find_element_by_class_name(self.more_button).click()
-            time.sleep(10)
+            time.sleep(5)
         # HTML を取得
         self.html = self.driver.get_html()
 

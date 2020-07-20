@@ -1,32 +1,36 @@
 from ec._client import Client
 from ec.channels.curators import Lyst
-from ec.channels.retailers import Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles
+from ec.channels.retailers import Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire
 from ec.channels.malls import BuymaItems
 
 import pandas as pd
 import re
 
 def test(event, context):
+    keywords = ["PRADA", "bag"]
+
+    """ Lyst から検索ワード一覧を取得 """
+
+    lyst = Lyst()
+    c = Client(lyst)
+    c.search(keywords=keywords)
+    data, columns = c.collect()
+    # print(data)
+    path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
+    df_curator = c.to_df(data=data, columns=columns, save=path)
+
     # keywords = ["FURLA"]
-
-    # lyst = Lyst()
-    # c = Client(lyst)
-    # c.search(keywords=keywords)
-    # data, columns = c.collect()
-    # # print(data)
-    # path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
-    # df_curator = c.to_df(data=data, columns=columns, save=path)
-
-    keywords = ["FURLA"]
-    path = "~/Desktop/Lyst.com&FURLA.collected.csv"
+    # path = "~/Desktop/Lyst.com&FURLA.collected.csv"
 
     df_curator = pd.read_csv(path)
     print(df_curator.head())
 
+    """ 取得先のリテーラーから必要情報を取得 """
+
     data_dict = {}
     for index, row in df_curator.iterrows():
         retailer_name = row["retailer"].replace(" ", "").capitalize().strip()
-        if retailer_name in ("Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles",):
+        if retailer_name in ("Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles", "Cettire",):
             retailer = globals()[retailer_name](row["href"])
             c = Client(retailer)
             c.search()
@@ -47,6 +51,8 @@ def test(event, context):
     # df2 = pd.read_csv(path)
     df2 = df2.dropna()
     buymaItems = BuymaItems()
+
+    """ 取得先のリテーラーから必要情報を取得 """
 
     ptn = r".+[^\-A-Z0-9]([\-A-Z0-9]+$)"
     prc_ptn = r"[^0-9\.]"
