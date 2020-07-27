@@ -311,7 +311,7 @@ def main(event, context):
         comment = "※作成中\n"
         # 空白が入っているかどうかで sku 判定を行う
         if " " in row["retailer_sku"]:
-            comment += "[ 型番が取得出来なかった可能性があります。アイテムを確認下さい。]"
+            comment += "[ 型番が取得出来なかった可能性があります。アイテムを確認下さい。]\n"
         comment += row["retailer_description"] + "\n"
         comment += ex.template["商品コメント"]
         if get_east_asian_width_count(comment) > ex.validates["商品コメント"]:
