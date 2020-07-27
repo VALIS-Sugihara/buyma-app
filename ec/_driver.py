@@ -2,7 +2,10 @@ from abc import ABCMeta, abstractmethod
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.alert import Alert
 import requests
 import time
 
@@ -52,6 +55,9 @@ class Chrome(Driver):
         # デフォルト待機時間の設定
         # self._driver.implicitly_wait(10)        
 
+    # def __del__(self):
+    #     self.exit()
+
     def access(self, url: str = ""):
         self._driver.get(url)
 
@@ -74,6 +80,9 @@ class Chrome(Driver):
         # Get Screen Shot
         self._driver.save_screenshot(filename)
 
+    def wait(self):
+        WebDriverWait(self._driver, 15).until(EC.presence_of_all_elements_located)
+
 
 class Requests(Driver):    
     _driver = None
@@ -87,17 +96,22 @@ class Requests(Driver):
         pass
 
     def get_html(self, url: str):
-        headers = {'User-Agent': self._user_agent}
-        response = self._driver.get(url, headers=headers)
-        # TODO:: ErrorHandling
-        if str(response.status_code) == "429":
-            print("-- Maybe Too Many Requests... 3seconds Wait...")
-            print(response.status_code)
-            print(response.headers)
-            print(response.request.headers)
-            time.sleep(int(response.headers["Retry-After"]))
-            return self.get_html(url)
-        return response.text
+        # 例外が発生しました: ReadTimeout HTTPSConnectionPool(host='www.buyma.com', port=443): Read timed out. (read timeout=3.0)
+        try:
+            headers = {'User-Agent': self._user_agent}
+            response = self._driver.get(url, headers=headers, timeout=(3.0, 60))
+            # TODO:: ErrorHandling
+            if str(response.status_code) == "429":
+                print("-- Maybe Too Many Requests... 3seconds Wait...")
+                print(response.status_code)
+                print(response.headers)
+                print(response.request.headers)
+                time.sleep(int(response.headers["Retry-After"]))
+                return self.get_html(url)
+            return response.text
+        except Exception as e:
+            print("Exception Occured ... Requests.get_html ", url, e.args[0])
+            return ""
 
     def exit(self):
         pass
