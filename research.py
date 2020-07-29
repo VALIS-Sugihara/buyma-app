@@ -1,31 +1,31 @@
 from ec._client import Client
 from ec.channels.curators import Lyst, Shoppingscanner
-from ec.channels.retailers import Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire, Ssence, Luisaviaroma, Shopbop, Nugnes1920, Harveynichols, Tessabit, Matchesfashion, Biffi, Giglio, Gilt
+from ec.channels.retailers import Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire, Ssense, Luisaviaroma, Shopbop, Nugnes1920, Harveynichols, Tessabit, Matchesfashion, Biffi, Giglio, Gilt
 from ec.channels.malls import BuymaItems
 
 import pandas as pd
 import re
 
 RETAILER_NAMES = (
-    "Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles", "Cettire", "Ssence", "Luisaviaroma",
+    "Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles", "Cettire", "Ssense", "Luisaviaroma",
     "Shopbop", "Nugnes1920", "Harveynichols", "Tessabit", "Matchesfashion", "Biffi", "Giglio", "Gilt"
 )
 
 def test(event, context):
-    keywords = ["celine", "bag"]
+    keywords = ["gucci"]
 
     """ Lyst から検索ワード一覧を取得 """
 
-    # lyst = Lyst()
-    # c = Client(lyst)
-    # c.search(keywords=keywords)
-    # data, columns = c.collect()
-    # # print(data)
-    # path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
-    # df_curator = c.to_df(data=data, columns=columns, save=path)
+    lyst = Lyst()
+    c = Client(lyst)
+    c.search(keywords=keywords)
+    data, columns = c.collect()
+    # print(data)
+    path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
+    df_curator = c.to_df(data=data, columns=columns, save=path)
 
     # keywords = ["FURLA"]
-    path = "~/Desktop/Lyst.com&celine+bag.collected.csv"
+    # path = "~/Desktop/Lyst.com&celine+bag.collected.csv"
 
     df_curator = pd.read_csv(path)
     print(df_curator.head())
@@ -98,22 +98,23 @@ def test(event, context):
 
 
 def sub(event, context):
-    keywords = ["furla", "wallet"]
+    keywords = ["balenciaga", "wallet"]
 
     """ Lyst から検索ワード一覧を取得 """
 
-    shoppingscanner = Shoppingscanner()
-    c = Client(shoppingscanner)
-    c.search(keywords=keywords)
-    data, columns = c.collect()
-    print(data)
-    path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
-    df_curator = c.to_df(data=data, columns=columns, save=path)
+    # shoppingscanner = Shoppingscanner()
+    # c = Client(shoppingscanner)
+    # c.search(keywords=keywords)
+    # data, columns = c.collect()
+    # print(data)
+    # path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
+    # df_curator = c.to_df(data=data, columns=columns, save=path)
 
     # keywords = ["FURLA"]
-    # path = "~/Desktop/Shoppingscanner.com&GUCCI+bag.collected.csv"
+    path = "~/Desktop/Shoppingscanner.com&balenciaga+wallet.collected.csv"
 
     df_curator = pd.read_csv(path)
+    df_curator = df_curator[df_curator["retailer"]=="AT GIGLIO"]
     print(df_curator.head())
     # df_curator = df_curator.head()
 
@@ -190,4 +191,4 @@ def sub(event, context):
     return True
 
 
-test(1,1)
+sub(1,1)

@@ -38,4 +38,6 @@ CUSTOM_DICT = {
     "HOLDER": "ホルダー",
     "TEXTURED": "テクスチャ",
     "SWING": "スウィング",
+    "BABYLON": "バビロン",
+    
 }

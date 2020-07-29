@@ -62,6 +62,7 @@ class Lyst(Curator):
     SEARCH_URL = "https://www.lyst.com/search/%s"
     search_properties = {
         "QUERY_PARAM": "q",
+        "DISCOUNT_RATE": "discount_from",
         "AND_METHOD": "+"
     }
     structure = [
@@ -91,6 +92,13 @@ class Lyst(Curator):
     def __init__(self):
         super().__init__()
         self.driver = Chrome()
+
+    def activate_search(self, keywords: list = [], discount_rate=50):
+        """ search 前に URL を作成し、返却する """
+        query = "?{}={}".format(self.search_properties["QUERY_PARAM"], self.search_properties["AND_METHOD"].join(keywords))
+        if str(discount_rate) in ("1", "20", "50", "70"):
+            query += self.search_properties["AND_METHOD"] + self.search_properties["DISCOUNT_RATE"] + "=" + str(discount_rate)
+        return self.SEARCH_URL % (query,)
 
     def search(self, url: str = ""):
         # _term 毎に振る舞いを変える
@@ -162,7 +170,7 @@ class Shoppingscanner(Curator):
     keyword = ""
     html = None
     TOP_URL = "https://www.shoppingscanner.com/"
-    SEARCH_URL = "https://www.shoppingscanner.com/search/index/condition-new/%s&sort=ranking&order=ASC"
+    SEARCH_URL = "https://www.shoppingscanner.com/search/index/condition-new/sale-%s-100/%s&sort=ranking&order=ASC"
     search_properties = {
         "QUERY_PARAM": "k",
         "AND_METHOD": "%20"
@@ -193,6 +201,13 @@ class Shoppingscanner(Curator):
     def __init__(self):
         super().__init__()
         self.driver = Chrome()
+
+    def activate_search(self, keywords: list = [], discount_rate=30):
+        """ search 前に URL を作成し、返却する """
+        query = "?{}={}".format(self.search_properties["QUERY_PARAM"], self.search_properties["AND_METHOD"].join(keywords))
+        if str(discount_rate) not in ("0", "20", "30", "50"):
+            discount_rate = 50
+        return self.SEARCH_URL % (str(discount_rate), query,)
 
     def search(self, url: str = ""):
         # _term 毎に振る舞いを変える

@@ -44,9 +44,16 @@ class Retailer():
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -81,7 +88,7 @@ class Ruelala(Retailer):
                 "retailer_price": "span.list-price span.value.bfx-price",
                 "retailer_origin_price": "span.msrp span.value.bfx-price",
                 "retailer_sku": "#product_header h1",
-                "retailer_images": ("/html/body/div[2]/div/div/section[1]/section[1]/div[3]/a", "background",),
+                "retailer_images": ('//*[@id="thumbnail_images"]/a', "background",),
                 # "colors": "",
                 # "sizes": ""
             }
@@ -144,6 +151,13 @@ class Ruelala(Retailer):
                             _data.append(price.get_text().strip())
                         else:
                             _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
                     elif target == "retailer_images":
                         _data.append(self.img_urls)
                     else:
@@ -158,30 +172,30 @@ class Mytheresa(Retailer):
     name = "mytheresa.com"
     keyword = ""
     html = None
-    TOP_URL = "https://www.mytheresa.com/en-jp/"
+    TOP_URL = "×"
     structure = [
         {
             "units": "div.product-view",
             "targets": {
                 "retailer_brand": ".catalog-product-view .product-shop .product-designer",
                 "retailer_title": ".catalog-product-view .product-name span",
-                "retailer_description": ".pa1.product-description",
-                "retailer_price": ".catalog-product-view .product-shop .special-price span.price",
+                "retailer_description": "div.product-shop > div.product-collateral.toggle-content.accordion-open > dl",
+                "retailer_price": ".price-info .price-box .regular-price .price",
                 "retailer_origin_price": ".catalog-product-view .product-shop .old-price span.price",
                 "retailer_sku": ".product-sku span.h1",
-                "retailer_images": ".product-image .product-image-gallery .slick-slide > img",
+                "retailer_images": ".slick-slide > img.gallery-image",
                 # "colors": "",
                 # "sizes": ""
             }
         }
     ]
-    driver = Requests()
     more_button = ""
     _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
     max_term = 0
 
     def __init__(self, url):
         self.url = url
+        self.driver = Chrome()
 
 
 class Farfetch(Retailer):
@@ -205,13 +219,13 @@ class Farfetch(Retailer):
             }
         }
     ]
-    driver = Requests()
     more_button = ""
     _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
     max_term = 0
 
     def __init__(self, url):
         self.url = url
+        self.driver = Requests()
 
     def collect(self, client, **add_property):
         units = client.soup.select(self.get_structure("units"))
@@ -234,9 +248,16 @@ class Farfetch(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -274,13 +295,13 @@ class Vitkac(Retailer):
             }
         }
     ]
-    driver = Requests()
     more_button = ""
     _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
     max_term = 0
 
     def __init__(self, url):
         self.url = url
+        self.driver = Requests()
 
 
 class Modes(Retailer):
@@ -304,13 +325,13 @@ class Modes(Retailer):
             }
         }
     ]
-    driver = Requests()
     more_button = ""
     _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
     max_term = 0
 
     def __init__(self, url):
         self.url = url
+        self.driver = Requests()
 
 
 class Forzieri(Retailer):
@@ -334,13 +355,13 @@ class Forzieri(Retailer):
             }
         }
     ]
-    driver = Requests()
     more_button = ""
     _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
     max_term = 0
 
     def __init__(self, url):
         self.url = url
+        self.driver = Requests()
 
 
 class Mybag(Retailer):
@@ -364,13 +385,13 @@ class Mybag(Retailer):
             }
         }
     ]
-    driver = Requests()
     more_button = ""
     _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
     max_term = 0
 
     def __init__(self, url):
         self.url = url
+        self.driver = Requests()
 
 
 class Coggles(Retailer):
@@ -394,13 +415,13 @@ class Coggles(Retailer):
             }
         }
     ]
-    driver = Requests()
     more_button = ""
     _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
     max_term = 0
 
     def __init__(self, url):
         self.url = url
+        self.driver = Requests()
 
 
 class Cettire(Retailer):
@@ -453,9 +474,16 @@ class Cettire(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -479,8 +507,8 @@ class Cettire(Retailer):
         return data, columns
 
 
-class Ssence(Retailer):
-    name = "ssence.com"
+class Ssense(Retailer):
+    name = "ssense.com"
     keyword = ""
     html = None
     TOP_URL = "https://www.ssense.com"
@@ -529,9 +557,16 @@ class Ssence(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -602,9 +637,16 @@ class Luisaviaroma(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -677,9 +719,16 @@ class Shopbop(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -750,9 +799,16 @@ class Nugnes1920(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -825,9 +881,16 @@ class Harveynichols(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -898,9 +961,16 @@ class Tessabit(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -971,9 +1041,16 @@ class Matchesfashion(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -1044,9 +1121,16 @@ class Biffi(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -1117,9 +1201,16 @@ class Giglio(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
-                    if target == "retailer_price":
+                    elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
@@ -1217,6 +1308,13 @@ class Gilt(Retailer):
                     if target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:

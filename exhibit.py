@@ -7,6 +7,8 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.alert import Alert
+# Selectタグが扱えるエレメントに変化させる為の関数を呼び出す
+from selenium.webdriver.support.ui import Select
 
 import pandas as pd
 from datetime import date, datetime, timedelta
@@ -14,9 +16,13 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
-import pandas as pd
 import re
 import os
+
+import sys
+sys.path.append(os.path.abspath("machine_learnings"))
+print(sys.path)
+from main import predict
 
 
 STATUS = "PREPARE"
@@ -101,9 +107,9 @@ class Exhibiter():
         "商品コメント":"""
 ※ご注文前に必ず在庫確認をお願いいたします。
         
-■ブランド名：
+■ブランド名：{0}
 
-■商品名：
+■商品名：{1}
 
 ■カラー：
 
@@ -244,7 +250,7 @@ def main(event, context):
     ex = Exhibiter()
     driver = chrome._driver
 
-    path = "~/Desktop/buyma.com&furla+wallet.researched.csv"
+    path = "~/Desktop/buyma.com&balenciaga+wallet.researched.csv"
 
     driver.get(ex.URLS["LOGIN_URL"])
 
@@ -270,31 +276,33 @@ def main(event, context):
     for index, row in df.iterrows():
 
         # 画像DL
-        images = []
-        i = 0
-        ptn = r"^(.+)_80(\.jpg|\.png|\.gif)$"
-        for url in row["retailer_images"].split("@@@"):
-            url = re.sub(ptn, r"\1_1000\2", url)
-            print(url)
-            response = requests.get(url)
-            if response.status_code == 200:
-                image = response.content
-                if is_jpg(image):
-                    ext = ".jpg"
-                elif is_png(image):
-                    ext = ".png"
-                elif is_gif(image):
-                    ext = ".gif"
-                else:
-                    ext = ".jpg"
-                with open("/tmp/image_%s%s" % (str(i),ext,), "wb") as f:
-                    f.write(image)
-                    images.append("/tmp/image_%s%s" % (str(i), ext,))
-                    i += 1
-        # 商品画像
-        print(images)
-        driver.find_element_by_xpath(ex.elements["商品画像"]).send_keys("\n".join(images))
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "商品画像"))
+        # images = []
+        # i = 0
+        # ptn = r"^(.+)_80(\.jpg|\.png|\.gif)$"
+        # for url in row["retailer_images"].split("@@@"):
+        #     url = re.sub(ptn, r"\1_1000\2", url)
+        #     ptn_ = r"^(//.+)$"
+        #     url = re.sub(ptn_, r"https:\1", url)
+        #     print(url)
+        #     response = requests.get(url)
+        #     if response.status_code == 200:
+        #         image = response.content
+        #         if is_jpg(image):
+        #             ext = ".jpg"
+        #         elif is_png(image):
+        #             ext = ".png"
+        #         elif is_gif(image):
+        #             ext = ".gif"
+        #         else:
+        #             ext = ".jpg"
+        #         with open("/tmp/image_%s%s" % (str(i),ext,), "wb") as f:
+        #             f.write(image)
+        #             images.append("/tmp/image_%s%s" % (str(i), ext,))
+        #             i += 1
+        # # 商品画像
+        # print(images)
+        # driver.find_element_by_xpath(ex.elements["商品画像"]).send_keys("\n".join(images))
+        # chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "商品画像"))
 
         # 商品タイトル
         title = row["brand"] + " " + row["retailer_title"]
@@ -312,15 +320,39 @@ def main(event, context):
         # 空白が入っているかどうかで sku 判定を行う
         if " " in row["retailer_sku"]:
             comment += "[ 型番が取得出来なかった可能性があります。アイテムを確認下さい。]\n"
-        comment += row["retailer_description"] + "\n"
-        comment += ex.template["商品コメント"]
+        comment += row["retailer_description"].replace("é", "") + "\n"
+        comment += ex.template["商品コメント"].format(row["brand"], row["retailer_title"])
         if get_east_asian_width_count(comment) > ex.validates["商品コメント"]:
             diff = ex.validates["商品コメント"] - get_east_asian_width_count(comment)
             comment = comment[:diff]
         driver.find_element_by_xpath(ex.elements["商品コメント"]).send_keys(comment)
         chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "商品コメント"))
 
-        # TODO:: カテゴリ
+        # カテゴリ
+        try:
+            wait = WebDriverWait(driver, 30)
+            categories = [predict(kana_title, "category_1"), predict(kana_title, "category_2"), predict(kana_title, "category_3")]
+            # 普通にエレメントを取得する
+            select_paths = ["react-select-2--value", "react-select-10--value", "react-select-11--value"]
+            option_paths = ["bmm-c-select-option__main", "Select-option", "Select-option"]
+            for i, select_path in enumerate(select_paths):
+                select = driver.find_element_by_id(select_path)
+                select.click()
+                wait.until(
+                    EC.visibility_of_element_located((By.CLASS_NAME, option_paths[i]))
+                )
+                chrome.screenshot(filename="/tmp/{0}{1}_{2}_sel{3}.png".format(row["brand"], str(index), "カテゴリ", i))
+
+                options = driver.find_elements_by_class_name(option_paths[i])
+                for op in options:
+                    print(op.text)
+                    if op.text == categories[i]:
+                        op.click()
+                        break
+                chrome.screenshot(filename="/tmp/{0}{1}_{2}_op{3}.png".format(row["brand"], str(index), "ブランド", i))
+        except Exception as e:
+            print("Exception Occured ...", e.args[0])
+            pass
 
         # ブランド
         brand = row["brand"]
@@ -333,8 +365,6 @@ def main(event, context):
         # chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "型番"))
 
         # 配送方法
-        # driver.find_element_by_xpath(ex.elements["配送方法"]).click()
-        # script = '$("#SellUI-react-component-008901d3-afc2-463e-9d3d-fb757a76c868 > div > div > div > div.bmm-l-cnt__body.sell-body.is-btnbar-fixed > form > div:nth-child(5) > div > div > div.bmm-l-col.bmm-l-col-9 > div > div > div:nth-child(2) > div.bmm-c-form-table__body > table > tbody > tr:nth-child(1) > td.bmm-c-form-table__icon-cell").click()'
         script = 'document.getElementsByClassName("bmm-c-form-table__icon-cell")[1].click()'
         driver.execute_script(script)
         chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "配送方法"))
