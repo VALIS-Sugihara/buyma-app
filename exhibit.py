@@ -22,13 +22,13 @@ import os
 import sys
 sys.path.append(os.path.abspath("machine_learnings"))
 print(sys.path)
+from custom_dict import CUSTOM_DICT
 from main import predict
 
 
 STATUS = "PREPARE"
 dict_ = {}
 def english_to_katakana(word):
-    from custom_dict import CUSTOM_DICT
     # url = 'https://www.sljfaq.org/cgi/e2k_ja.cgi'
     # url_q = url + '?word=' + word
     # headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0'}
@@ -250,7 +250,7 @@ def main(event, context):
     ex = Exhibiter()
     driver = chrome._driver
 
-    path = "~/Desktop/buyma.com&balenciaga+wallet.researched.csv"
+    path = "~/Desktop/buyma.com&stella+mccartney.researched.csv"
 
     driver.get(ex.URLS["LOGIN_URL"])
 
@@ -265,7 +265,8 @@ def main(event, context):
     """ フォーム入力 """
     driver.get(ex.URLS["SELL_URL"])
     chrome.wait()
-    h1_text = driver.find_element_by_xpath("/html/body/div[3]/div[2]/div[1]/div/div[1]/div/div/div/div[1]/h1").text
+    # h1_text = driver.find_element_by_xpath("/html/body/div[3]/div[2]/div[1]/div/div[1]/div/div/div/div[1]/h1").text
+    h1_text = driver.find_element_by_css_selector("h1.bmm-c-heading__ttl").text
     if h1_text != "新規出品":
         chrome.screenshot(filename="/tmp/error_1.png")
         raise Exception("出品ページへ遷移出来ませんでした")
@@ -276,33 +277,33 @@ def main(event, context):
     for index, row in df.iterrows():
 
         # 画像DL
-        # images = []
-        # i = 0
-        # ptn = r"^(.+)_80(\.jpg|\.png|\.gif)$"
-        # for url in row["retailer_images"].split("@@@"):
-        #     url = re.sub(ptn, r"\1_1000\2", url)
-        #     ptn_ = r"^(//.+)$"
-        #     url = re.sub(ptn_, r"https:\1", url)
-        #     print(url)
-        #     response = requests.get(url)
-        #     if response.status_code == 200:
-        #         image = response.content
-        #         if is_jpg(image):
-        #             ext = ".jpg"
-        #         elif is_png(image):
-        #             ext = ".png"
-        #         elif is_gif(image):
-        #             ext = ".gif"
-        #         else:
-        #             ext = ".jpg"
-        #         with open("/tmp/image_%s%s" % (str(i),ext,), "wb") as f:
-        #             f.write(image)
-        #             images.append("/tmp/image_%s%s" % (str(i), ext,))
-        #             i += 1
-        # # 商品画像
-        # print(images)
-        # driver.find_element_by_xpath(ex.elements["商品画像"]).send_keys("\n".join(images))
-        # chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "商品画像"))
+        images = []
+        i = 0
+        ptn = r"^(.+)_80(\.jpg|\.png|\.gif)$"
+        for url in row["retailer_images"].split("@@@"):
+            url = re.sub(ptn, r"\1_1000\2", url)
+            ptn_ = r"^(//.+)$"
+            url = re.sub(ptn_, r"https:\1", url)
+            print(url)
+            response = requests.get(url)
+            if response.status_code == 200:
+                image = response.content
+                if is_jpg(image):
+                    ext = ".jpg"
+                elif is_png(image):
+                    ext = ".png"
+                elif is_gif(image):
+                    ext = ".gif"
+                else:
+                    ext = ".jpg"
+                with open("/tmp/image_%s%s" % (str(i),ext,), "wb") as f:
+                    f.write(image)
+                    images.append("/tmp/image_%s%s" % (str(i), ext,))
+                    i += 1
+        # 商品画像
+        print(images)
+        driver.find_element_by_xpath(ex.elements["商品画像"]).send_keys("\n".join(images))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "商品画像"))
 
         # 商品タイトル
         title = row["brand"] + " " + row["retailer_title"]

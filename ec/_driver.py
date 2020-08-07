@@ -36,6 +36,7 @@ class Chrome(Driver):
         # options.binary_location = "/opt/python/bin/headless-chromium"
         options.add_argument("--headless")
         options.add_argument("--no-sandbox")
+        options.add_argument("--disable-setuid-sandbox")
         options.add_argument("--single-process")
         options.add_argument("--disable-gpu")
         options.add_argument("--window-size=1280x1696")
@@ -93,13 +94,13 @@ class Requests(Driver):
 
     def access(self, url: str = ""):
         # self._driver.get(url)
-        pass
+        self.url = url
 
-    def get_html(self, url: str):
+    def get_html(self):
         # 例外が発生しました: ReadTimeout HTTPSConnectionPool(host='www.buyma.com', port=443): Read timed out. (read timeout=3.0)
         try:
             headers = {'User-Agent': self._user_agent}
-            response = self._driver.get(url, headers=headers, timeout=(3.0, 60))
+            response = self._driver.get(self.url, headers=headers, timeout=(15.0, 60))
             # TODO:: ErrorHandling
             if str(response.status_code) == "429":
                 print("-- Maybe Too Many Requests... 3seconds Wait...")
@@ -107,11 +108,14 @@ class Requests(Driver):
                 print(response.headers)
                 print(response.request.headers)
                 time.sleep(int(response.headers["Retry-After"]))
-                return self.get_html(url)
+                return self.get_html(self.url)
             return response.text
         except Exception as e:
-            print("Exception Occured ... Requests.get_html ", url, e.args[0])
+            print("Exception Occured ... Requests.get_html ", self.url, e.args[0])
             return ""
 
     def exit(self):
+        pass
+
+    def wait(self):
         pass

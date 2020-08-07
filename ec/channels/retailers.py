@@ -17,7 +17,7 @@ class Retailer():
         # 個別のアクションを追記
         self.driver.access(url)
         # HTML を取得
-        self.html = self.driver.get_html(url)
+        self.html = self.driver.get_html()
 
     def activate_search(self, keywords: list = []):
         """ search 前に URL を作成し、返却する """
@@ -123,7 +123,7 @@ class Ruelala(Retailer):
             self.img_urls = ""
 
         # HTML を取得
-        self.html = self.driver.get_html(url)
+        self.html = self.driver.get_html()
 
     def collect(self, client, **add_property):
         units = client.soup.select(self.get_structure("units"))
@@ -1284,7 +1284,7 @@ class Gilt(Retailer):
             self.img_urls = ""
 
         # HTML を取得
-        self.html = self.driver.get_html(url)
+        self.html = self.driver.get_html()
 
     def collect(self, client, **add_property):
         units = client.soup.select(self.get_structure("units"))
@@ -1321,6 +1321,83 @@ class Gilt(Retailer):
                             _data.append("")                            
                     elif target == "retailer_images":
                         _data.append(self.img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(_data)
+            i += 1
+        return data, columns
+
+
+class Articture(Retailer):
+    name = "articture.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://articture.com/"
+    structure = [
+        {
+            "units": "#shopify-section-product-template > section > div",
+            "targets": {
+                "retailer_brand": "",
+                "retailer_title": "h1.ProductMeta__Title",
+                "retailer_description": ".ProductMeta__Description",
+                "retailer_price": "span.pro_main_price",
+                "retailer_origin_price": "span.Price--compareAt",
+                "retailer_sku": "",
+                "retailer_images": ("img#ProductPhotoImg", "src",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = ""
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Requests()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                # print(target, selector)
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_brand" or target == "retailer_sku":
+                        _data.append("Articture")
+                    elif target == "retailer_price":
+                        # SALE price がなければ OriginPrice を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
+                        if price is not None:
+                            _data.append(price.get_text().strip())
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_images":
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
+                        print(img_urls)
+                        _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
             data[i] = _data

@@ -97,7 +97,7 @@ class Lyst(Curator):
         """ search 前に URL を作成し、返却する """
         query = "?{}={}".format(self.search_properties["QUERY_PARAM"], self.search_properties["AND_METHOD"].join(keywords))
         if str(discount_rate) in ("1", "20", "50", "70"):
-            query += self.search_properties["AND_METHOD"] + self.search_properties["DISCOUNT_RATE"] + "=" + str(discount_rate)
+            query += "&" + self.search_properties["DISCOUNT_RATE"] + "=" + str(discount_rate)
         return self.SEARCH_URL % (query,)
 
     def search(self, url: str = ""):
@@ -147,7 +147,8 @@ class Lyst(Curator):
                         if _href is not None:
                             # super().search(_href)
                             req = Requests()
-                            self.html = req.get_html(_href)
+                            req.access(_href)
+                            self.html = req.get_html()
                             client.scoop()
                             # _term を変更
                             self._term = 1
@@ -155,8 +156,13 @@ class Lyst(Curator):
                             print(d)
                             # _term を戻す
                             self._term = 0
-                            _href = d[0][0]
-                        _data.append(self.TOP_URL + _href)
+                            try:
+                                _href = d[0][0]
+                                _href = self.TOP_URL + _href
+                            except Exception as e:
+                                print("Eception Occured ...", e.args[0])
+                                _href = None
+                        _data.append(_href)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
             data[i] = _data
@@ -257,7 +263,8 @@ class Shoppingscanner(Curator):
                             if _href is not None:
                                 # super().search(_href)
                                 req = Requests()
-                                self.html = req.get_html(_href)
+                                req.access(_href)
+                                self.html = req.get_html()
                                 client.scoop()
                                 # _term を変更
                                 self._term = 1
@@ -275,6 +282,91 @@ class Shoppingscanner(Curator):
                 print("Exception is Occured", e.args[0])
                 data[i] = [None for c in columns]
                 i += 1
+                continue
+
+        return data, columns
+
+
+class Articture(Curator):
+    name = "articture.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://articture.com"
+    SEARCH_URL = "https://articture.com/search%s"
+    search_properties = {
+        "QUERY_PARAM": "q",
+        "AND_METHOD": "&"
+    }
+    structure = [
+        {
+            "units": ".ProductItem ",
+            "targets": {
+                "brand": "",
+                "title": ".ProductItem__Title > a",
+                "href": ".ProductItem__Title > a",
+                # "origin_price": False,
+                "price": ".ProductItem__Price",
+                # "discount_rate": False,
+                "retailer": ""
+            }
+        }
+    ]
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+    next_btn = 'a[title="Next page"]'
+    next_page = True
+
+    def __init__(self):
+        super().__init__()
+        self.driver = Requests()
+        self.cnt = 0  # アイテム数カウント用
+
+    def activate_search(self, keywords: list = []):
+        if self.next_page is True:
+            """ search 前に URL を作成し、返却する """
+            query = "?{}={}".format(self.search_properties["QUERY_PARAM"], self.search_properties["AND_METHOD"].join(keywords))
+            return self.SEARCH_URL % (query,)
+        else:
+            """ next_page があった場合はそれを返す """
+            return self.next_page
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data = {}
+        for unit in units:
+            try:
+                # 追加プロパティ設定（値）
+                _data = []
+                if any(add_property):
+                    _data = [v for v in add_property.values()]
+                for target, selector in self.get_structure("targets").items():
+                    print(target, selector)
+                    if selector is False:
+                        _data.append("")
+                    else:
+                        if target == "href":
+                            _href = self.TOP_URL + unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None
+                            _data.append(_href)
+                        elif target == "brand" or target == "retailer":
+                            _data.append("Articture")
+                        else:
+                            _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+                data[self.cnt] = _data
+                self.cnt += 1
+                # 次ページを更新
+                self.next_page = self.TOP_URL + client.soup.select_one(self.next_btn)["href"]
+                # print(_data)
+            except Exception as e:
+                print("Exception is Occured", e.args[0])
+                data[self.cnt] = [None for c in columns]
+                self.cnt += 1
+                self.next_page = None
                 continue
 
         return data, columns

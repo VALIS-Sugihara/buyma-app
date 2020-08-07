@@ -16,7 +16,7 @@ class Malls():
         # 個別のアクションを追記
         self.driver.access(url)
         # HTML を取得
-        self.html = self.driver.get_html(url)
+        self.html = self.driver.get_html()
 
     def activate_search(self, keywords: list = []):
         """ search 前に URL を作成し、返却する """

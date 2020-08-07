@@ -11,9 +11,9 @@ class Client():
     def scoop(self):
         self.soup = BeautifulSoup(self.channel.html, 'html.parser')
 
-    def search(self, keywords: list = []):
+    def search(self, keywords: list = [], **kwargs):
         self.keyword = "+".join(keywords)
-        url = self.channel.activate_search(keywords)
+        url = self.channel.activate_search(keywords, **kwargs)
         self.channel.search(url)
         # self.channel.driver.exit()
         self.scoop()
