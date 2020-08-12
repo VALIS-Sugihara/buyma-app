@@ -16,6 +16,7 @@ class Retailer():
 
         # 個別のアクションを追記
         self.driver.access(url)
+        self.driver.wait()
         # HTML を取得
         self.html = self.driver.get_html()
 
@@ -50,22 +51,22 @@ class Retailer():
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector) if any(unit.select(selector)) else []
-                        img_urls = "@@@".join([img_url["src"] for img_url in img_urls]) if any(img_urls) else ""
+                        img_urls = "@@@".join([img_url["src"] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
             data[i] = _data
-            print(_data)
+            print(self.name, _data)
             i += 1
         return data, columns
 
@@ -120,7 +121,7 @@ class Ruelala(Retailer):
             self.img_urls = "@@@".join(img_urls)
         except Exception as e:
             print("Exception Occured ... ", e.args[0])
-            self.img_urls = ""
+            self.img_urls = None
 
         # HTML を取得
         self.html = self.driver.get_html()
@@ -150,20 +151,20 @@ class Ruelala(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_images":
                         _data.append(self.img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
             data[i] = _data
-            print(_data)
+            print(self.name, _data)
             i += 1
         return data, columns
 
@@ -254,22 +255,22 @@ class Farfetch(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector) if any(unit.select(selector)) else []
-                        img_urls = "@@@".join([img_url["content"] for img_url in img_urls]) if any(img_urls) else ""
+                        img_urls = "@@@".join([img_url["content"] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
             data[i] = _data
-            print(_data)
+            print(self.name, _data)
             i += 1
         return data, columns
 
@@ -331,7 +332,7 @@ class Modes(Retailer):
 
     def __init__(self, url):
         self.url = url
-        self.driver = Requests()
+        self.driver = Chrome()
 
 
 class Forzieri(Retailer):
@@ -480,14 +481,14 @@ class Cettire(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         ptn = r"^.*Designer Model Number: (.+)Designer Colour:.*$"
@@ -497,8 +498,7 @@ class Cettire(Retailer):
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector) if any(unit.select(selector)) else []
-                        img_urls = "@@@".join([img_url["src"] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url["src"] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -563,22 +563,21 @@ class Ssense(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         sku = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -643,14 +642,14 @@ class Luisaviaroma(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         ptn = r"^.*Item Code:(.+)$"
@@ -659,8 +658,7 @@ class Luisaviaroma(Retailer):
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -725,22 +723,21 @@ class Shopbop(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         sku = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -805,14 +802,14 @@ class Nugnes1920(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         ptn = r"^.*Code:(.+)$"
@@ -821,8 +818,7 @@ class Nugnes1920(Retailer):
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -838,14 +834,14 @@ class Harveynichols(Retailer):
     TOP_URL = "https://www.harveynichols.com/"
     structure = [
         {
-            "units": "#page > div.content > div > div.pdp__coreinfo.u-clear-fix",
+            "units": "#page",
             "targets": {
                 "retailer_brand": "div.p-details > div > p > a",
-                "retailer_title": "div.p-details > div > div.p-details__name-wrap > h1 > p.p-details__name.p-details__name--coach",
-                "retailer_description": "div.p-more-info__content.p-more-info__content--active > div > div.long-text.p-more-info__html.p-more-info__html--infocare",
+                "retailer_title": "div.p-details > div > div.p-details__name-wrap > h1 > p.p-details__name",
+                "retailer_description": "div.p-more-info__inner > div.long-text > div",
                 "retailer_price": "div.p-details > div > div.p-details__price > div > p",
                 "retailer_origin_price": "div.p-details > div > div.p-details__price > div > p",
-                "retailer_sku": "div.p-more-info__content.p-more-info__content--active > div > div.p-more-info__subcontent > div.sku-style-number > p:nth-child(1) > span",
+                "retailer_sku": "div.sku-style-number > p:nth-child(1) > span",
                 "retailer_images": (".slick-slider .slick-list .slick-track > div > div > img", "src",),
                 # "colors": "",
                 # "sizes": ""
@@ -887,22 +883,21 @@ class Harveynichols(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         sku = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -918,13 +913,13 @@ class Tessabit(Retailer):
     TOP_URL = "https://www.tessabit.com/"
     structure = [
         {
-            "units": "body > div.page-wrapper > div.inner-wrapper > div.container-fluid.pad.product-page-container.container-fs-fixed-content > div.row.fs-fixed-content",
+            "units": "body",
             "targets": {
                 "retailer_brand": "#product_addtocart_form > a > span",
                 "retailer_title": "#product_addtocart_form > div.product-name > h1",
                 "retailer_description": "#product_addtocart_form > div.description",
-                "retailer_price": "#product-price-490950 > span",
-                "retailer_origin_price": "#product-price-490950 > span",
+                "retailer_price": ".price-info > .price-box > span:nth-child(1) span.price",
+                "retailer_origin_price": ".price-info > .price-box > span:nth-child(2) span.price",
                 "retailer_sku": "#product_addtocart_form > div.description > div > span:nth-child(2)",
                 "retailer_images": ("#product-gallery .product-gallery-carousel .owl-stage .owl-item img.img-responsive", "src",),
                 # "colors": "",
@@ -967,22 +962,21 @@ class Tessabit(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         sku = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -1005,7 +999,7 @@ class Matchesfashion(Retailer):
                 "retailer_description": "#mCSB_1_container > div",
                 "retailer_price": "div.pdp__description-wrapper > div.pdp__header.hidden-mobile > p",
                 "retailer_origin_price": "div.pdp__description-wrapper > div.pdp__header.hidden-mobile > p",
-                "retailer_sku": "#mCSB_1_container > div > p:nth-child(3) > span",
+                "retailer_sku": "#mCSB_1_container > div > p:nth-child(4) > span",
                 "retailer_images": ("#main-image-js .slick-list .slick-slide > div > div > img:nth-child(1)", "src",),
                 # "colors": "",
                 # "sizes": ""
@@ -1047,22 +1041,21 @@ class Matchesfashion(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         sku = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -1083,8 +1076,8 @@ class Biffi(Retailer):
                 "retailer_brand": "div > div.product-info-main > div > div.top-block > div > div.pre-name > a",
                 "retailer_title": "div > div.product-info-main > div > div.top-block > div > div.wrap-name-wishlist > h1",
                 "retailer_description": "#tab-description > div",
-                "retailer_price": "#product-price-39350 > span",
-                "retailer_origin_price": "#product-price-39350 > span",
+                "retailer_price": "span.normal-price span.price",
+                "retailer_origin_price": "span.old-price span.price",
                 "retailer_sku": "#tab-description > div > div.product-sku > span",
                 "retailer_images": (".images-gallery-wrapper .images-gallery > img", "src",),
                 # "colors": "",
@@ -1127,22 +1120,21 @@ class Biffi(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         sku = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -1207,14 +1199,14 @@ class Giglio(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_sku":
                         # SKU 切り出し
                         "Designer code: "
@@ -1224,8 +1216,7 @@ class Giglio(Retailer):
                         _data.append(sku)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
@@ -1281,7 +1272,7 @@ class Gilt(Retailer):
             self.img_urls = "@@@".join(img_urls)
         except Exception as e:
             print("Exception Occured ... ", e.args[0])
-            self.img_urls = ""
+            self.img_urls = None
 
         # HTML を取得
         self.html = self.driver.get_html()
@@ -1311,20 +1302,20 @@ class Gilt(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_origin_price":
                         # Old price がなければ Price を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_images":
                         _data.append(self.img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
             data[i] = _data
-            print(_data)
+            print(self.name, _data)
             i += 1
         return data, columns
 
@@ -1392,15 +1383,519 @@ class Articture(Retailer):
                         if price is not None:
                             _data.append(price.get_text().strip())
                         else:
-                            _data.append("")                            
+                            _data.append(None)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
-                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else ""
-                        print(img_urls)
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
             data[i] = _data
-            print(_data)
+            print(self.name, _data)
+            i += 1
+        return data, columns
+
+
+class Antonioli(Retailer):
+    name = "articture.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://www.antonioli.eu/"
+    structure = [
+        {
+            "units": "#product-container",
+            "targets": {
+                "retailer_brand": "div.details.fixed > div.box-add > form > div.details--name > a",
+                "retailer_title": "div.details.fixed > div.box-add > form > div.details--descriptions > div.details--descriptions--product > span",  # span の一行目のみ
+                "retailer_description": "div.details.fixed > div.box-add > form > div.details--descriptions > div.details--descriptions--product > span",
+                "retailer_price": ("div.details.fixed > div.box-add > form > div.details--price > div > span:nth-child(1)", "content",),
+                "retailer_origin_price": "div.details.fixed > div.box-add > form > div.details--price > div > span:nth-child(1) > span > s",
+                "retailer_sku": "",
+                "retailer_images": ("div.images > div.images-extended > span", "data-image",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = ""
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Requests()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_title":
+                        # 一行目のみ取得
+                        title = unit.select_one(selector) if unit.select_one(selector) is not None else ""
+                        if title is not None:
+                            _data.append("\n".split(title)[0])
+                        else:
+                            _data.append("")                            
+                    elif target == "retailer_sku":
+                        # brand + title を sku に設定
+                        _selector = self.get_structure("targets")["retailer_brand"]
+                        _brand = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+                        # 一行目のみ取得
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = "\n".split(unit.select_one(_selector))[0] if unit.select_one(_selector) is not None else ""
+                        _data.append(_brand + " " + _title)
+                    elif target == "retailer_price":
+                        # SALE price がなければ OriginPrice を入れる
+                        price = unit.select_one(selector[0])[selector[1]] if unit.select_one(selector[0]) is not None else None
+                        if price is not None:
+                            _data.append(price.strip())
+                        else:
+                            _selector = self.get_structure("targets")["retailer_origin_price"]
+                            _data.append(unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else None)
+                    elif target == "retailer_origin_price":
+                        # Old price がなければ Price を入れる
+                        origin_price = unit.select_one(selector) if unit.select_one(selector) is not None else None
+                        if origin_price is not None:
+                            _data.append(origin_price.get_text().strip())
+                        else:
+                            _selector = self.get_structure("targets")["retailer_price"]
+                            origin_price = unit.select_one(_selector[0])[1] if unit.select_one(_selector[0]) is not None else None
+                            _data.append(origin_price)
+                    elif target == "retailer_images":
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
+                        _data.append(img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(self.name, _data)
+            i += 1
+        return data, columns
+
+
+class _24scom(Retailer):
+    name = "24s.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://www.24s.com/"
+    structure = [
+        {
+            "units": "#__next",
+            "targets": {
+                "retailer_brand": "h1.item-product > a.item-brand",
+                "retailer_title": "h1.item-product > span",
+                "retailer_description": "div.b-quote > blockquote",
+                "retailer_price": "h1 ~ div.item-price p:nth-child(1) > span",
+                "retailer_origin_price": "h1 ~ div.item-price p.sale",
+                "retailer_sku": "",
+                "retailer_images": (".slick-slider.slick-horizontal > .slick-list > .slick-track > .slick-slide img", "src",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = ""
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Chrome()
+
+    def search(self, url: str = ""):
+        """ 汎用 search メソッド 
+        指定したURLをリクエストし、
+        HTMLソースを自身へセットする.
+        """
+        # 個別のアクションを追記
+        self.driver.access(url)
+        self.driver.wait()
+
+        # slick_slider 部分を事前にクリックする
+        script = '$.each($(".slick-slider.slick-vertical > .slick-list > .slick-track > .slick-slide"), function(i, elm){setTimeout(function(){ $(".slick-arrow.slick-next").click() }, i * 1000)})'
+        self.driver._driver.execute_script(script)
+
+        # HTML を取得
+        self.html = self.driver.get_html()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_sku":
+                        # brand + title を sku に設定
+                        _selector = self.get_structure("targets")["retailer_brand"]
+                        _brand = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _data.append(_brand + " " + _title)
+                    elif target == "retailer_price":
+                        # ¥17,680 /€141 の形で入ってくるためトリミング
+                        ptn = r"(¥[0-9\.,]+).*/.+$"
+                        price = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else ""
+                        price = re.sub(ptn, r"\1", price)
+                        _data.append(price)
+                    elif target == "retailer_origin_price":
+                        origin_price = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None
+                        # retailer_origin_price がなければ retailer_price を入れる
+                        if origin_price is None:
+                            origin_price = unit.select_one(self.get_structure("targets")["retailer_price"]).get_text().strip() if unit.select_one(self.get_structure("targets")["retailer_price"]) is not None else ""
+                            # ¥17,680 /€141 の形で入ってくるためトリミング
+                            ptn = r"(¥[0-9\.,]+).*/.+$"
+                            origin_price = re.sub(ptn, r"\1", origin_price)
+                        else:
+                            # (was ¥22,100) -20% の形で入ってくるためトリミング
+                            ptn = r"(¥[0-9\.,]+).*/.+$"
+                            origin_price = re.sub(ptn, r"\1", origin_price)
+                        _data.append(origin_price)
+                    elif target == "retailer_images":
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
+                        _data.append(img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(self.name, _data)
+            i += 1
+        return data, columns
+
+
+class Modaoperandi(Retailer):
+    name = "modaoperandi.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://www.modaoperandi.com/"
+    structure = [
+        {
+            "units": "#wraps-body-content",
+            "targets": {
+                "retailer_brand": (".product_detail_page", "data-brand",),
+                "retailer_title": (".product_detail_page", "data-name",),
+                "retailer_description": ".description_text.editors_note_text > p",
+                "retailer_price": ".product_price span.current_price",
+                "retailer_origin_price": ".product_price span.original_price",
+                "retailer_sku": "",  # 一応 SKU も .product_code としてあるが作成する
+                "retailer_images": (".pdp_image_wrapper img", "src",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = ""
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Chrome()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_brand":
+                        _data.append(unit.select_one(selector[0])[selector[1]].strip() if unit.select_one(selector[0]) is not None else None)
+                    elif target == "retailer_title":
+                        _data.append(unit.select_one(selector[0])[selector[1]].strip() if unit.select_one(selector[0]) is not None else None)
+                    elif target == "retailer_sku":
+                        # brand + title を sku に設定
+                        _selector = self.get_structure("targets")["retailer_brand"]
+                        _brand = unit.select_one(_selector[0])[_selector[1]].strip() if unit.select_one(_selector[0]) is not None else ""
+
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = unit.select_one(_selector[0])[_selector[1]].strip() if unit.select_one(_selector[0]) is not None else ""
+
+                        _data.append(_brand + " " + _title)
+                    elif target == "retailer_origin_price":
+                        # retailer_origin_price がなければ retailer_price を入れる
+                        origin_price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"])
+                        origin_price = origin_price.get_text().strip() if origin_price is not None else None
+                        _data.append(origin_price)
+                    elif target == "retailer_images":
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
+                        _data.append(img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(self.name, _data)
+            i += 1
+        return data, columns
+
+
+class Danielloboutique(Retailer):
+    name = "danielloboutique.it"
+    keyword = ""
+    html = None
+    TOP_URL = "https://www.danielloboutique.it/"
+    structure = [
+        {
+            "units": "#maincontent",
+            "targets": {
+                "retailer_brand": ".product.attribute.manufacturer > div",
+                "retailer_title": ".product.attribute.name > div",
+                "retailer_description": ".product.attribute.description > div.content",
+                "retailer_price": ".product-info-main .price-box > span span.price",
+                "retailer_origin_price": ".product-info-main .price-box span.old-price span.price",
+                "retailer_sku": "",  # 一応 SKU も .product_code としてあるが作成する
+                "retailer_images": ("img.fotorama__img", "src",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = ""
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Chrome()
+
+    def search(self, url: str = ""):
+        """ 汎用 search メソッド 
+        指定したURLをリクエストし、
+        HTMLソースを自身へセットする.
+        """
+        # 個別のアクションを追記
+        self.driver.access(url)
+        selector = self.get_structure("targets")["retailer_images"][0]
+        self.driver.wait(selector=selector)
+        # HTML を取得
+        self.html = self.driver.get_html()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_sku":
+                        # brand + title を sku に設定
+                        _selector = self.get_structure("targets")["retailer_brand"]
+                        _brand = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _data.append(_brand + " " + _title)
+                    elif target == "retailer_origin_price":
+                        # retailer_origin_price がなければ retailer_price を入れる
+                        origin_price = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"]).get_text().strip()
+                        _data.append(origin_price)
+                    elif target == "retailer_images":
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
+                        _data.append(img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(self.name, _data)
+            i += 1
+        return data, columns
+
+
+class Raffaellonetwork(Retailer):
+    name = "raffaello-network.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://www.raffaello-network.com/"
+    structure = [
+        {
+            "units": "#detail",
+            "targets": {
+                "retailer_brand": "#product-range > h1",
+                "retailer_title": "#product-range > span",
+                "retailer_description": "#features",
+                "retailer_price": "#specialoffer",
+                "retailer_origin_price": "#prices > span",
+                "retailer_sku": "#features span:last-child",
+                "retailer_images": ("#detail-left ul li a", "rel",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = ""
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Requests()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_price":
+                        # retailer_price がなければ retailer_origin_price を入れる
+                        price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
+                        price = price.get_text().strip() if price is not None else None
+                        _data.append(price)
+                    elif target == "retailer_images":
+                        # この形で入ってくるのでトリミング
+                        # {gallery: 'gal1', smallimage: 'https://cdn.raffaello-network.com/english/fashion-details/465520/36/gucci-sunglasses_gucsun-gg0253s002002-medium-1.jpg',largeimage: 'https://cdn.raffaello-network.com/english/fashion-details/465520/36/gucci-sunglasses_gucsun-gg0253s002002-large-1.jpg'}
+                        ptn = r".*largeimage:.*\'(http.+)\'.+$"
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        if any(img_urls):
+                            urls = []
+                            for img_url in img_urls:
+                                if img_url.has_attr(selector[1]):
+                                    attr = str(img_url[selector[1]])
+                                    urls.append(re.sub(ptn, r"\1", attr))
+                            img_urls = "@@@".join(urls)
+                        else:
+                            img_urls = None
+                        _data.append(img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(self.name, _data)
+            i += 1
+        return data, columns
+
+
+class Saksfifthavenue(Retailer):
+    name = "saksfifthavenue.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://www.saksfifthavenue.com/"
+    structure = [
+        {
+            "units": "#pdp-content-area",
+            "targets": {
+                "retailer_brand": ".product-overview__brand",
+                "retailer_title": "h1.product-overview__short-description",
+                "retailer_description": ".product-description",
+                "retailer_price": "#salePrice",
+                "retailer_origin_price": "#regularPrice",
+                "retailer_sku": "",  # 一応 SKU も .product_code としてあるが作成する
+                "retailer_images": ("div.s7thumb", "style",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = ""
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Chrome()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_sku":
+                        # brand + title を sku に設定
+                        _selector = self.get_structure("targets")["retailer_brand"]
+                        _brand = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _data.append(_brand + " " + _title)
+                    elif target == "retailer_price":
+                        # retailer_price がなければ retailer_origin_price を入れる
+                        price = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"]).get_text().strip()
+                        _data.append(price)
+                    elif target == "retailer_images":
+                        # style属性で入ってくるのでトリミング
+                        # background-repeat: no-repeat; background-position: center center; width: 76px; height: 90px; background-image: url("https://image.s5a.com/is/image/saks/0400011817797_A3?fit=constrain,1&wid=76&hei=90&fmt=jpg&op_usm%3D1.2%2C1%2C10%2C0%26resmode%3Dsharp%26iccEmbed%3d1%26icc%3DsRGB%20IEC61966-2.1%26op_saturation%3D-15");
+                        ptn = r"^.+url\(\"(http.+)\?.+\"\).*$"  # 原サイズを取りたいので ? 以降を除去
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        img_urls = "@@@".join([re.sub(ptn, r"\1", img_url[selector[1]]) for img_url in img_urls]) if any(img_urls) else None
+                        _data.append(img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(self.name, _data)
             i += 1
         return data, columns

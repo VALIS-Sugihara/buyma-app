@@ -54,7 +54,7 @@ class Chrome(Driver):
             chrome_options=options
         )
         # デフォルト待機時間の設定
-        # self._driver.implicitly_wait(10)        
+        # self._driver.implicitly_wait(300)
 
     # def __del__(self):
     #     self.exit()
@@ -81,8 +81,13 @@ class Chrome(Driver):
         # Get Screen Shot
         self._driver.save_screenshot(filename)
 
-    def wait(self):
-        WebDriverWait(self._driver, 15).until(EC.presence_of_all_elements_located)
+    def wait(self, selector=None):
+        if selector:
+            WebDriverWait(self._driver, 60).until(
+                EC.visibility_of_element_located((By.CSS_SELECTOR, selector))
+            )
+        else:
+            WebDriverWait(self._driver, 60).until(EC.presence_of_all_elements_located)
 
 
 class Requests(Driver):    
