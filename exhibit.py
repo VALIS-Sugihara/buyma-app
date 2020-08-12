@@ -250,7 +250,7 @@ def main(event, context):
     ex = Exhibiter()
     driver = chrome._driver
 
-    path = "~/Desktop/buyma.com&stella+mccartney.researched.csv"
+    path = "~/Desktop/buyma.com&versace.researched.csv"
 
     driver.get(ex.URLS["LOGIN_URL"])
 

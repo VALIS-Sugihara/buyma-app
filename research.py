@@ -1,6 +1,10 @@
 from ec._client import Client
 from ec.channels.curators import Lyst, Shoppingscanner, Articture as Art
-from ec.channels.retailers import Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire, Ssense, Luisaviaroma, Shopbop, Nugnes1920, Harveynichols, Tessabit, Matchesfashion, Biffi, Giglio, Gilt, Articture
+from ec.channels.retailers import (
+    Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire, Ssense, Luisaviaroma,
+    Shopbop, Nugnes1920, Harveynichols, Tessabit, Matchesfashion, Biffi, Giglio, Gilt, Articture,
+    Antonioli, _24scom, Modaoperandi, Danielloboutique, Raffaellonetwork, Saksfifthavenue
+)
 from ec.channels.malls import BuymaItems
 
 import pandas as pd
@@ -8,7 +12,8 @@ import re
 
 RETAILER_NAMES = (
     "Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles", "Cettire", "Ssense", "Luisaviaroma",
-    "Shopbop", "Nugnes1920", "Harveynichols", "Tessabit", "Matchesfashion", "Biffi", "Giglio", "Gilt", "Articture"
+    "Shopbop", "Nugnes1920", "Harveynichols", "Tessabit", "Matchesfashion", "Biffi", "Giglio", "Gilt", "Articture",
+    "Antonioli", "_24scom", "Modaoperandi", "Danielloboutique", "Raffaellonetwork", "Saksfifthavenue"
 )
 
 
@@ -23,7 +28,7 @@ def exchange_currency(cheapest_price: str):
     elif "$" in cheapest_price or "USD" in cheapest_price:
         # cheapest_price = float(cheapest_price.replace("$", "").replace(",", "").strip()) * 108
         cheapest_price = float(re.sub(prc_ptn, "", cheapest_price)) * 108
-    elif "¥" in cheapest_price or "JPY" in cheapest_price or "￥" in cheapest_price:
+    elif "¥" in cheapest_price or "JPY" in cheapest_price or "￥" in cheapest_price or "円" in cheapest_price:
         # cheapest_price = float(cheapest_price.replace("¥", "").replace("JPY", "").replace(",", "").strip())
         cheapest_price = float(re.sub(prc_ptn, "", cheapest_price))
 
@@ -41,7 +46,7 @@ def exchange_retailer_name(retailer_name: str):
 
 
 def test(event, context):
-    keywords = ["goyard", "bag"]
+    keywords = ["versace"]
     discount_rate = 20
 
     """ Pt.1 Lyst から検索ワード一覧を取得 """
@@ -123,7 +128,7 @@ def test(event, context):
 
 
 def sub(event, context):
-    keywords = ["GOYARD"]
+    keywords = ["prada", "bag"]
     discount_rate = 30
 
     """ Pt.1 Lyst から検索ワード一覧を取得 """
@@ -136,7 +141,7 @@ def sub(event, context):
     df_curator = c.to_df(data=data, columns=columns, save=path)
 
     # keywords = ["FURLA"]
-    # path = "~/Desktop/Shoppingscanner.com&balenciaga+wallet.collected.csv"
+    # path = "~/Desktop/Shoppingscanner.com&loewe+bag.collected.csv"
     # df_curator = pd.read_csv(path)
     print(df_curator.head())
 
@@ -283,4 +288,4 @@ def articture(event, context):
     return True
 
 
-test(1,1)
+sub(1,1)
