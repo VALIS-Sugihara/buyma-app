@@ -3,7 +3,8 @@ from ec.channels.curators import Lyst, Shoppingscanner, Articture as Art
 from ec.channels.retailers import (
     Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire, Ssense, Luisaviaroma,
     Shopbop, Nugnes1920, Harveynichols, Tessabit, Matchesfashion, Biffi, Giglio, Gilt, Articture,
-    Antonioli, _24scom, Modaoperandi, Danielloboutique, Raffaellonetwork, Saksfifthavenue
+    Antonioli, _24scom, Modaoperandi, Danielloboutique, Raffaellonetwork, Saksfifthavenue,
+    Saksoff5th
 )
 from ec.channels.malls import BuymaItems
 
@@ -13,7 +14,8 @@ import re
 RETAILER_NAMES = (
     "Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles", "Cettire", "Ssense", "Luisaviaroma",
     "Shopbop", "Nugnes1920", "Harveynichols", "Tessabit", "Matchesfashion", "Biffi", "Giglio", "Gilt", "Articture",
-    "Antonioli", "_24scom", "Modaoperandi", "Danielloboutique", "Raffaellonetwork", "Saksfifthavenue"
+    "Antonioli", "_24scom", "Modaoperandi", "Danielloboutique", "Raffaellonetwork", "Saksfifthavenue",
+    "Saksoff5th"
 )
 
 
@@ -379,8 +381,24 @@ class TestRetailers(unittest.TestCase):
         except:
             c.channel.driver.screenshot("/tmp/Saksfifthavenue.png")
 
+    def test_Saksoff5th(self):
+        try:
+            url = "https://www.saksoff5th.com/product/marcus-adler-printed-2-piece-bandana-mask-set-0400012781189.html?dwvar_0400012781189_color=RED_BLUE"
+            retailer = Saksoff5th(url)
+            c = Client(retailer)
+            c.search()
+            data, columns = c.collect()
+
+            # print(data)
+
+            self.assertIsInstance(data, dict)
+            self.assertNotIn(None, data[0])
+
+        except:
+            c.channel.driver.screenshot("/tmp/Saksfifthavenue.png")
+
 
 if __name__ == '__main__':
-    unittest.main()
-    # t = TestRetailers()
-    # t.test_Danielloboutique()
+    # unittest.main()
+    t = TestRetailers()
+    t.test_Saksoff5th()
