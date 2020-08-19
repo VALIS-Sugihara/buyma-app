@@ -1,4 +1,7 @@
 from abc import ABCMeta, abstractmethod
+import re
+import os
+import unicodedata
 
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -16,9 +19,6 @@ import time
 import requests
 from bs4 import BeautifulSoup
 
-import re
-import os
-
 import sys
 sys.path.append(os.path.abspath("machine_learnings"))
 print(sys.path)
@@ -28,47 +28,6 @@ from main import predict
 
 STATUS = "PREPARE"
 dict_ = {}
-def english_to_katakana(word):
-    # url = 'https://www.sljfaq.org/cgi/e2k_ja.cgi'
-    # url_q = url + '?word=' + word
-    # headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0'}
-
-    # response = requests.get(url_q)
-    # if response.status_code == 200:
-    #     soup = BeautifulSoup(response.text, 'html.parser')
-    #     katakana_string = soup.find_all(class_='katakana-string')[0].string.replace('\n', '')
-    #     return katakana_string
-    # else:
-    #     print("EnglishToKatakana Response is ", response.status_code)
-    #     return None
-
-    # bep-eng.dicから辞書作成
-    global STATUS
-    global dict_
-    if STATUS == "PREPARE":
-        # dic_file = os.path.dirname(os.path.abspath(__file__)) + '/bep-eng.dic'
-        # with open(dic_file, mode='r', encoding='utf-8') as f:
-        #     lines = f.readlines()
-        #     for i, line in enumerate(lines):
-        #         if i >= 6:
-        #             line_list = line.replace('\n', '').split(' ')
-        #             dict_[line_list[0]] = line_list[1]
-        dict_.update(CUSTOM_DICT)
-        STATUS = "LOADED"
-    
-    return dict_.get(word.upper(), word)
-
-
-import unicodedata
-
-def get_east_asian_width_count(text):
-    count = 0
-    for c in text:
-        if unicodedata.east_asian_width(c) in 'FWA':
-            count += 2
-        else:
-            count += 1
-    return count
 
 
 class Exhibiter():
@@ -103,6 +62,7 @@ class Exhibiter():
         "出品メモ": 1000  # 半角1000文字まで
     }
 
+    # TODO:: ブランドイントロダクション挿入
     template = {
         "商品コメント":"""
 ※ご注文前に必ず在庫確認をお願いいたします。
@@ -151,14 +111,180 @@ https://www.buyma.com/contents/safety/anshin.html
 【発送後】海外から：通常時は、７−１４日でのお届けが目安となりますが、現在コロナウィルスの影響でお届けに遅延が発生しているケースがございます。
 国内から：通常時は、翌日〜３日程度でのお届けが目安となりますが、天候やその他の状況により目安よりも日数がかかる場合がございます。
 お荷物の場所は発送後にお送りさせていただく追跡番号にてご確認下さい。
+""" ,
+        "GUCCI":"""
+_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
+GUCCI
+GG柄でも有名、シンプルで洗練されたデザインが人気のイタリアブランド
+GUCCI(グッチ)は1923年にグッチオ・グッチが高級皮革製品の店をイタリアに創業したのが始まり。品質保証の為に、世界で初めてデザイナーの名前を入れて商品を販売したブランドとしても有名。
+グッチオ・グッチ自らが考案した、ダブルＧのモノグラムは今も世界中の人々に愛され続けている。ミニマムで洗練されたアイテムの数々は常にファッション界の注目の的！
+_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
 """
     }
+
+    def __init__(self, data: dict):
+        self.data = data
 
     @classmethod
     def active(cls, xpath=""):
         cls.find_element_by_css_selector(xpath)
 
-    pass
+    @classmethod
+    def english_to_katakana(cls, word: str) -> str:
+        # url = 'https://www.sljfaq.org/cgi/e2k_ja.cgi'
+        # url_q = url + '?word=' + word
+        # headers = {'User-Agent': 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0'}
+
+        # response = requests.get(url_q)
+        # if response.status_code == 200:
+        #     soup = BeautifulSoup(response.text, 'html.parser')
+        #     katakana_string = soup.find_all(class_='katakana-string')[0].string.replace('\n', '')
+        #     return katakana_string
+        # else:
+        #     print("EnglishToKatakana Response is ", response.status_code)
+        #     return None
+
+        # bep-eng.dicから辞書作成
+        global STATUS
+        global dict_
+        if STATUS == "PREPARE":
+            # dic_file = os.path.dirname(os.path.abspath(__file__)) + '/bep-eng.dic'
+            # with open(dic_file, mode='r', encoding='utf-8') as f:
+            #     lines = f.readlines()
+            #     for i, line in enumerate(lines):
+            #         if i >= 6:
+            #             line_list = line.replace('\n', '').split(' ')
+            #             dict_[line_list[0]] = line_list[1]
+            dict_.update(CUSTOM_DICT)
+            STATUS = "LOADED"
+        
+        return dict_.get(word.upper(), word)
+
+    @classmethod
+    def get_east_asian_width_count(cls, text: str) -> int:
+        count = 0
+        for c in text:
+            if unicodedata.east_asian_width(c) in 'FWA':
+                count += 2
+            else:
+                count += 1
+        return count
+
+    @classmethod
+    def generate_images(cls, data: dict) -> list:
+        # 画像DL
+        images = []
+        ptn = r"^(.+)_80(\.jpg|\.png|\.gif)$"
+        ptn_ = r"^(//.+)$"
+        for i, url in enumerate(data["retailer_images"].split("@@@")):
+            try:
+                url = re.sub(ptn, r"\1_1000\2", url)
+                url = re.sub(ptn_, r"https:\1", url)
+
+                response = requests.get(url)
+                if response.status_code == 200:
+                    image = response.content
+                    if is_jpg(image):
+                        ext = ".jpg"
+                    elif is_png(image):
+                        ext = ".png"
+                    elif is_gif(image):
+                        ext = ".gif"
+                    else:
+                        ext = ".jpg"
+                    with open("/tmp/image_%s%s" % (str(i),ext,), "wb") as f:
+                        f.write(image)
+                        images.append("/tmp/image_%s%s" % (str(i), ext,))
+                        i += 1
+            except:
+                break
+        
+        return images
+
+    @classmethod
+    def generate_titles(cls, data: dict) -> (str, str,):  # -> str:カナTitle
+        title = data["brand"] + " " + data["retailer_title"]
+        kana_title = " ".join([cls.english_to_katakana(word) for word in title.split()])
+
+        # 文字数バリデーション
+        if cls.get_east_asian_width_count(kana_title) > cls.validates["商品名"]:
+            diff = cls.validates["商品名"] - cls.get_east_asian_width_count(kana_title)
+            kana_title = kana_title[:diff]
+
+        return (title, kana_title,)
+
+    @classmethod
+    def generate_comment(cls, data: dict) -> str:
+
+        comment_ptn1 = comment_ptn2 = ""
+        # 空白が入っているかどうかで sku 判定を行う
+        if " " in data["retailer_sku"]:
+            comment_ptn1 += "[ 型番が取得出来なかった可能性があります。アイテムを確認下さい。]\n"
+            comment_ptn2 += "[ 型番が取得出来なかった可能性があります。アイテムを確認下さい。]\n"
+
+        # description 追加
+        comment_ptn1 += data["retailer_description"] + "\n"
+        comment_ptn2 += data["retailer_description"] + "\n"
+
+        # brand 紹介文
+        if data["brand"].upper() in cls.template.keys():
+            comment_ptn2 += cls.template[data["brand"].upper()]
+        
+        # コメントフォーマットに変数を挿入
+        comment_ptn1 += cls.template["商品コメント"].format(data["brand"], data["retailer_title"])
+        comment_ptn2 += cls.template["商品コメント"].format(data["brand"], data["retailer_title"])
+
+        # 禁則文字処理 TODO::関数化
+        comment_ptn1 = comment_ptn1.replace("é", "").replace("•", "")
+        comment_ptn2 = comment_ptn2.replace("é", "").replace("•", "")
+
+        # 文字数バリデーション
+        comment = comment_ptn2
+        comment = "※作成中\n" + comment
+        if cls.get_east_asian_width_count(comment) > cls.validates["商品コメント"]:
+            comment = comment_ptn1
+        if cls.get_east_asian_width_count(comment) > cls.validates["商品コメント"]:
+            diff = cls.validates["商品コメント"] - cls.get_east_asian_width_count(comment)
+            comment = comment[:diff]
+
+        return comment
+
+    @classmethod
+    def generate_categories(cls, kana_title: str) -> list:
+        categories = [predict(kana_title, "category_1"), predict(kana_title, "category_2"), predict(kana_title, "category_3")]
+        return categories
+
+    @classmethod
+    def generate_brand(cls, data: dict) -> str:
+        brand = data["brand"]
+        return brand
+
+    @classmethod
+    def generate_price(cls, data: dict) -> int:
+        price = int(data["active_price"])
+        return price
+
+    @classmethod
+    def generate_retailer(cls, data: dict) -> str:
+        retailer = data["retailer"]
+        return retailer
+
+    @classmethod
+    def generate_href(cls, data: dict) -> str:
+        href = data["href"]
+        return href
+
+    @classmethod
+    def generate_memo(cls, data: dict) -> str:
+        memo = [data["retailer_brand"], data["retailer_title"], data["retailer_price"], data["retailer_origin_price"], data["retailer_sku"]]
+        memo = ",".join(memo)
+        memo = "AutoCreated: True\n" + memo
+        if cls.get_east_asian_width_count(memo) > cls.validates["出品メモ"]:
+            diff = cls.validates["出品メモ"] - cls.get_east_asian_width_count(memo)
+            memo = memo[:diff]
+
+        return memo
+
 
 class Driver(metaclass=ABCMeta):
     @abstractmethod
@@ -247,12 +373,11 @@ def is_gif(b: bytes) -> bool:
 def main(event, context):
 
     chrome = Chrome()
-    ex = Exhibiter()
     driver = chrome._driver
 
-    path = "~/Desktop/buyma.com&versace.researched.csv"
+    path = "~/Desktop/buyma.com&valentino.researched.csv"
 
-    driver.get(ex.URLS["LOGIN_URL"])
+    driver.get(Exhibiter.URLS["LOGIN_URL"])
 
     """ LOGIN """
     driver.find_element_by_id('txtLoginId').send_keys("ec-customer-support@valis.jp")
@@ -263,8 +388,8 @@ def main(event, context):
     chrome.screenshot(filename="/tmp/buyma3.png")
 
     """ フォーム入力 """
-    driver.get(ex.URLS["SELL_URL"])
-    chrome.wait()
+    driver.get(Exhibiter.URLS["SELL_URL"])
+    WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located)
     # h1_text = driver.find_element_by_xpath("/html/body/div[3]/div[2]/div[1]/div/div[1]/div/div/div/div[1]/h1").text
     h1_text = driver.find_element_by_css_selector("h1.bmm-c-heading__ttl").text
     if h1_text != "新規出品":
@@ -274,65 +399,31 @@ def main(event, context):
     # 商品名
     df = pd.read_csv(path)
     df = df.dropna()
-    for index, row in df.iterrows():
+    for index, data in df.iterrows():
 
-        # 画像DL
-        images = []
-        i = 0
-        ptn = r"^(.+)_80(\.jpg|\.png|\.gif)$"
-        for url in row["retailer_images"].split("@@@"):
-            url = re.sub(ptn, r"\1_1000\2", url)
-            ptn_ = r"^(//.+)$"
-            url = re.sub(ptn_, r"https:\1", url)
-            print(url)
-            response = requests.get(url)
-            if response.status_code == 200:
-                image = response.content
-                if is_jpg(image):
-                    ext = ".jpg"
-                elif is_png(image):
-                    ext = ".png"
-                elif is_gif(image):
-                    ext = ".gif"
-                else:
-                    ext = ".jpg"
-                with open("/tmp/image_%s%s" % (str(i),ext,), "wb") as f:
-                    f.write(image)
-                    images.append("/tmp/image_%s%s" % (str(i), ext,))
-                    i += 1
+        ex = Exhibiter(data=data)
+
         # 商品画像
+        images = ex.generate_images(data=data)
         print(images)
         driver.find_element_by_xpath(ex.elements["商品画像"]).send_keys("\n".join(images))
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "商品画像"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "商品画像"))
 
         # 商品タイトル
-        title = row["brand"] + " " + row["retailer_title"]
-        kana_title = " ".join([english_to_katakana(word) for word in title.split()])
-        print(kana_title)
-        if get_east_asian_width_count(kana_title) > ex.validates["商品名"]:
-            diff = ex.validates["商品名"] - get_east_asian_width_count(kana_title)
-            kana_title = kana_title[:diff]
-        print(kana_title)
+        title, kana_title = ex.generate_titles(data=data)
+        print(kana_title, title)
         driver.find_element_by_xpath(ex.elements["商品名"]).send_keys(kana_title)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "商品名"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "商品名"))
 
         # 商品コメント
-        comment = "※作成中\n"
-        # 空白が入っているかどうかで sku 判定を行う
-        if " " in row["retailer_sku"]:
-            comment += "[ 型番が取得出来なかった可能性があります。アイテムを確認下さい。]\n"
-        comment += row["retailer_description"].replace("é", "") + "\n"
-        comment += ex.template["商品コメント"].format(row["brand"], row["retailer_title"])
-        if get_east_asian_width_count(comment) > ex.validates["商品コメント"]:
-            diff = ex.validates["商品コメント"] - get_east_asian_width_count(comment)
-            comment = comment[:diff]
+        comment = ex.generate_comment(data=data)
         driver.find_element_by_xpath(ex.elements["商品コメント"]).send_keys(comment)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "商品コメント"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "商品コメント"))
 
         # カテゴリ
         try:
             wait = WebDriverWait(driver, 30)
-            categories = [predict(kana_title, "category_1"), predict(kana_title, "category_2"), predict(kana_title, "category_3")]
+            categories = ex.generate_categories(kana_title=kana_title)
             # 普通にエレメントを取得する
             select_paths = ["react-select-2--value", "react-select-10--value", "react-select-11--value"]
             option_paths = ["bmm-c-select-option__main", "Select-option", "Select-option"]
@@ -342,7 +433,7 @@ def main(event, context):
                 wait.until(
                     EC.visibility_of_element_located((By.CLASS_NAME, option_paths[i]))
                 )
-                chrome.screenshot(filename="/tmp/{0}{1}_{2}_sel{3}.png".format(row["brand"], str(index), "カテゴリ", i))
+                chrome.screenshot(filename="/tmp/{0}{1}_{2}_sel{3}.png".format(data["brand"], str(index), "カテゴリ", i))
 
                 options = driver.find_elements_by_class_name(option_paths[i])
                 for op in options:
@@ -350,58 +441,62 @@ def main(event, context):
                     if op.text == categories[i]:
                         op.click()
                         break
-                chrome.screenshot(filename="/tmp/{0}{1}_{2}_op{3}.png".format(row["brand"], str(index), "ブランド", i))
+                chrome.screenshot(filename="/tmp/{0}{1}_{2}_op{3}.png".format(data["brand"], str(index), "ブランド", i))
         except Exception as e:
             print("Exception Occured ...", e.args[0])
             pass
 
         # ブランド
-        brand = row["brand"]
+        brand = ex.generate_brand(data=data)
         driver.find_element_by_xpath(ex.elements["ブランド"]).send_keys(brand)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "ブランド"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "ブランド"))
 
         # 型番（編集時のみ？）
-        # sku = row["retailer_sku"]
+        # sku = data["retailer_sku"]
         # driver.find_element_by_xpath(ex.elements["型番"]).send_keys(sku)
-        # chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "型番"))
+        # chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "型番"))
 
         # 配送方法
         script = 'document.getElementsByClassName("bmm-c-form-table__icon-cell")[1].click()'
         driver.execute_script(script)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "配送方法"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "配送方法"))
 
-        # 購入期限（90日後）
-        ninety_days_since = date.today() + timedelta(90)
+        # 購入期限（14日後）
+        ninety_days_since = date.today() + timedelta(14)
         ninety_days_since = ninety_days_since.strftime('%Y/%m/%d')
         # driver.find_element_by_xpath(ex.elements["購入期限"]).clear()
-        # chrome.screenshot(filename="/tmp/{0}{1}_{2}_A.png".format(row["brand"], str(index), "配送方法"))
+        # chrome.screenshot(filename="/tmp/{0}{1}_{2}_A.png".format(data["brand"], str(index), "配送方法"))
         # driver.find_element_by_xpath(ex.elements['購入期限']).send_keys(Keys.CONTROL + "a")
-        # chrome.screenshot(filename="/tmp/{0}{1}_{2}_B.png".format(row["brand"], str(index), "配送方法"))
+        # chrome.screenshot(filename="/tmp/{0}{1}_{2}_B.png".format(data["brand"], str(index), "配送方法"))
         # driver.find_element_by_xpath(ex.elements['購入期限']).send_keys(Keys.DELETE)
-        # chrome.screenshot(filename="/tmp/{0}{1}_{2}_C.png".format(row["brand"], str(index), "配送方法"))
+        # chrome.screenshot(filename="/tmp/{0}{1}_{2}_C.png".format(data["brand"], str(index), "配送方法"))
         for i in range(0, 10):
             driver.find_element_by_xpath(ex.elements['購入期限']).send_keys(Keys.BACK_SPACE)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}_C.png".format(row["brand"], str(index), "配送方法"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}_C.png".format(data["brand"], str(index), "配送方法"))
         driver.find_element_by_xpath(ex.elements["購入期限"]).send_keys(ninety_days_since)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}_D.png".format(row["brand"], str(index), "配送方法"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}_D.png".format(data["brand"], str(index), "配送方法"))
         # 別の箇所をクリック
         driver.find_element_by_xpath("/html/body/div[3]/div[2]/div[1]/div/div[1]/div/div/div/div[2]/form/div[6]/div[1]/div/div[1]/div/p").click()
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "購入期限"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "購入期限"))
 
         # TODO::: 買付地
 
         # TODO:: 発送地
 
+        # TODO:: 色・サイズ補足情報 に ブランドテンプレートと店内リンク
+        """他のGucciのアイテムはこちらからもご確認頂けます☆
+https://www.buyma.com/r/_GUCCI-%E3%82%B0%E3%83%83%E3%83%81/Arrivals/"""
+
         # 商品価格
-        price = int(row["active_price"])
+        price = ex.generate_price(data=data)
         print(price)
         driver.find_element_by_xpath(ex.elements["商品価格"]).send_keys(price)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "商品価格"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "商品価格"))
 
         # 参考価格
         # label_ = "/html/body/div[3]/div[2]/div[1]/div/div[1]/div/div/div/div[2]/form/div[7]/div[2]/div/div[2]/div/div/div[1]/div/label[2]"
         # driver.find_element_by_xpath(label_).click()
-        # origin_price = row["retailer_origin_price"]
+        # origin_price = data["retailer_origin_price"]
         # prc_ptn = r"[^0-9\.]"
         # if "€" in origin_price:
         #     # origin_price = float(origin_price.replace("€", "").replace(",", "").strip()) * 120
@@ -418,44 +513,39 @@ def main(event, context):
 
         # origin_price = int(origin_price)
         # driver.find_element_by_xpath(ex.elements["参考価格"]).send_keys(origin_price)
-        # chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "参考価格"))
+        # chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "参考価格"))
         # 設定しない
         pass
 
         # 買付先名
-        retailer = row["retailer"]
+        retailer = ex.generate_retailer(data=data)
         driver.find_element_by_xpath(ex.elements["買付先名"]).send_keys(retailer)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "買付先名"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "買付先名"))
 
         # 買付先URL
-        href = row["href"]
+        href = ex.generate_href(data=data)
         driver.find_element_by_xpath(ex.elements["買付先URL"]).send_keys(href)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "買付先URL"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "買付先URL"))
 
         # 説明
         today_ = datetime.today().strftime('%Y/%m/%d') + "時点"
         driver.find_element_by_xpath(ex.elements["説明"]).send_keys(today_)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "説明"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "説明"))
 
         # 出品メモ
-        memo = [row["retailer_brand"], row["retailer_title"], row["retailer_price"], row["retailer_origin_price"], row["retailer_sku"]]
-        memo = ",".join(memo)
-        memo = "AutoCreated: True\n" + memo
-        if get_east_asian_width_count(memo) > ex.validates["出品メモ"]:
-            diff = ex.validates["出品メモ"] - get_east_asian_width_count(memo)
-            memo = memo[:diff]
+        memo = ex.generate_memo(data=data)
         driver.find_element_by_xpath(ex.elements["出品メモ"]).send_keys(memo)
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "出品メモ"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "出品メモ"))
 
         # 下書き保存
         driver.find_element_by_xpath(ex.elements["下書き保存"]).click()
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "下書き保存"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "下書き保存"))
 
         # wait until someid is clickable
         wait = WebDriverWait(driver, 30)
         # element = wait.until(EC.element_to_be_clickable((By.XPATH, ex.elements["閉じる"])))
         # driver.find_element_by_xpath(ex.elements["閉じる"]).click()
-        # chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "閉じる"))
+        # chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "閉じる"))
 
         success_text = "下書きの保存が完了しました"
         # done_xpath = "/html/body/div[3]/div[2]/div[1]/div/div[2]/div[3]/div/div/div[1]/p"
@@ -464,15 +554,15 @@ def main(event, context):
             element = wait.until(
                 EC.text_to_be_present_in_element((By.CSS_SELECTOR, done_selector), success_text)
             )
-            chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "完了"))
+            chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "完了"))
         except Exception:
-            chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "完了_E"))
+            chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "完了_E"))
 
         driver.get(ex.URLS["SELL_URL"])
         # 遷移確認のアラートが出るので OK を押す
         Alert(driver).accept()
         chrome.wait()
-        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(row["brand"], str(index), "ReSTART"))
+        chrome.screenshot(filename="/tmp/{0}{1}_{2}.png".format(data["brand"], str(index), "ReSTART"))
 
     driver.close()
     driver.quit()
