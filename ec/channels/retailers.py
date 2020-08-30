@@ -1962,3 +1962,96 @@ class Saksoff5th(Retailer):
             print(self.name, _data)
             i += 1
         return data, columns
+
+
+class Theluxurycloset(Retailer):
+    name = "theluxurycloset.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://theluxurycloset.com/"
+    structure = [
+        {
+            "units": "body",
+            "targets": {
+                "retailer_brand": "[class*='ProductDetailsCard__productBrandName']",
+                "retailer_title": "[class*='ProductDetailsCard__productDescription']",
+                "retailer_description": "[class*='CollapseComponent__base']",
+                "retailer_price": "[class*='ProductDetailsCard__productPrice2']",
+                "retailer_origin_price": "[class*='ProductDetailsCard__productDiscountPrice2']",
+                "retailer_sku": "",  # 作成する
+                "retailer_images": ("img[class*='img-loaded']", "src",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = "DesktopVerticalCarousel__leftArrow"
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Chrome()
+
+    def search(self, url: str = ""):
+        """ 汎用 search メソッド 
+        指定したURLをリクエストし、
+        HTMLソースを自身へセットする.
+        """
+        # 個別のアクションを追記
+        self.driver.access(url)
+        self.driver.wait(selector="[class*='DesktopVerticalCarousel__leftArrow']")
+
+        # slick_slider 部分を事前にクリックする
+        _xpath = "/html/body/div[1]/div[2]/div[2]/div/div/div[3]/div[1]/div/div[1]/div/div/div/div[2]/div"
+        self.driver._driver.find_element_by_xpath(_xpath).click()
+        try:
+            self.driver._driver.find_element_by_class_name(cname).click()
+            self.driver._driver.find_element_by_class_name(cname).click()
+        except:
+            pass
+
+        # HTML を取得
+        self.html = self.driver.get_html()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_origin_price":
+                        # retailer_origin_price がなければ retailer_price を入れる
+                        price = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_price"]).get_text().strip()
+                        _data.append(price)
+                    elif target == "retailer_sku":
+                        # brand + title を sku に設定
+                        _selector = self.get_structure("targets")["retailer_brand"]
+                        _brand = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _data.append(_brand + " " + _title)
+                    elif target == "retailer_images":
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
+                        _data.append(img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(self.name, _data)
+            i += 1
+        return data, columns

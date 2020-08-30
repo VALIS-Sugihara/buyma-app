@@ -2,6 +2,10 @@ import time
 from .._driver import Chrome, Requests
 
 
+# memo
+# https://www.ikrix.com/jp/home-men
+
+
 class Curator():
     def __init__(self):
         pass
@@ -137,7 +141,6 @@ class Lyst(Curator):
             if any(add_property):
                 _data = [v for v in add_property.values()]
             for target, selector in self.get_structure("targets").items():
-                print(target, selector)
                 if selector is False:
                     _data.append("")
                 else:
@@ -253,7 +256,6 @@ class Shoppingscanner(Curator):
                 if any(add_property):
                     _data = [v for v in add_property.values()]
                 for target, selector in self.get_structure("targets").items():
-                    print(target, selector)
                     if selector is False:
                         _data.append("")
                     else:
@@ -346,7 +348,6 @@ class Articture(Curator):
                 if any(add_property):
                     _data = [v for v in add_property.values()]
                 for target, selector in self.get_structure("targets").items():
-                    print(target, selector)
                     if selector is False:
                         _data.append("")
                     else:

@@ -4,7 +4,7 @@ from ec.channels.retailers import (
     Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire, Ssense, Luisaviaroma,
     Shopbop, Nugnes1920, Harveynichols, Tessabit, Matchesfashion, Biffi, Giglio, Gilt, Articture,
     Antonioli, _24scom, Modaoperandi, Danielloboutique, Raffaellonetwork, Saksfifthavenue,
-    Saksoff5th
+    Saksoff5th, Theluxurycloset
 )
 from ec.channels.malls import BuymaItems
 
@@ -15,7 +15,7 @@ RETAILER_NAMES = (
     "Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles", "Cettire", "Ssense", "Luisaviaroma",
     "Shopbop", "Nugnes1920", "Harveynichols", "Tessabit", "Matchesfashion", "Biffi", "Giglio", "Gilt", "Articture",
     "Antonioli", "_24scom", "Modaoperandi", "Danielloboutique", "Raffaellonetwork", "Saksfifthavenue",
-    "Saksoff5th"
+    "Saksoff5th", "Theluxurycloset"
 )
 
 
@@ -397,8 +397,25 @@ class TestRetailers(unittest.TestCase):
         except:
             c.channel.driver.screenshot("/tmp/Saksfifthavenue.png")
 
+    def test_Theluxurycloset(self):
+        try:
+            url = "https://theluxurycloset.com/women/celine-grey-leather-and-suede-large-trapeze-bag-p228423"
+            retailer = Theluxurycloset(url)
+            c = Client(retailer)
+            c.search()
+            data, columns = c.collect()
+
+            # print(data)
+
+            self.assertIsInstance(data, dict)
+            self.assertNotIn(None, data[0])
+
+        except Exception as e:
+            print(e.args[0])
+            c.channel.driver.screenshot("/tmp/Theluxurycloset.png")
+
 
 if __name__ == '__main__':
     # unittest.main()
     t = TestRetailers()
-    t.test_Saksoff5th()
+    t.test_Theluxurycloset()
