@@ -2055,3 +2055,78 @@ class Theluxurycloset(Retailer):
             print(self.name, _data)
             i += 1
         return data, columns
+
+
+class Dolcegabbana(Retailer):
+    name = "dolcegabbana.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://www.dolcegabbana.com"
+    structure = [
+        {
+            "units": "body",
+            "targets": {
+                "retailer_brand": "",
+                "retailer_title": ".b-product_name",
+                "retailer_description": ".b-product_long_description",
+                "retailer_price": ".js-product_price-standard",
+                "retailer_origin_price": "",  # TODO:: ORIGIN PRICE あるパターンあるか確認 
+                "retailer_sku": "",  # 作成する
+                "retailer_images": ("img.b-product-image", "src",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = ""
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Chrome()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_origin_price":
+                        # retailer_price を入れる
+                        _selector = self.get_structure("targets")["retailer_price"]
+                        price = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else None
+                        _data.append(price)
+                    elif target == "retailer_brand":
+                        # Dolce&Gabbana をいれる
+                        _data.append("Dolce&Gabbana")
+                    elif target == "retailer_sku":
+                        # brand + title を sku に設定
+                        _brand = "Dolce&Gabbana"
+
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _data.append(_brand + " " + _title)
+                    elif target == "retailer_images":
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
+                        _data.append(img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(self.name, _data)
+            i += 1
+        return data, columns

@@ -51,6 +51,7 @@ class Chrome(Driver):
     
         self._driver = webdriver.Chrome(
             # executable_path="/opt/python/bin/chromedriver",
+            executable_path="/Users/sugiharanaoki/Repos/buyma/buyma-app/chromedriver",
             chrome_options=options
         )
         # デフォルト待機時間の設定
@@ -108,7 +109,7 @@ class Requests(Driver):
             response = self._driver.get(self.url, headers=headers, timeout=(15.0, 60))
             # TODO:: ErrorHandling
             if str(response.status_code) == "429":
-                print("-- Maybe Too Many Requests... 3seconds Wait...")
+                print("-- Maybe Too Many Requests... {0}seconds Wait...".format(response.headers["Retry-After"]))
                 print(response.status_code)
                 print(response.headers)
                 print(response.request.headers)

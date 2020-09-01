@@ -178,8 +178,10 @@ class Shoppingscanner(Curator):
     name = "Shoppingscanner.com"
     keyword = ""
     html = None
-    TOP_URL = "https://www.shoppingscanner.com/"
-    SEARCH_URL = "https://www.shoppingscanner.com/search/index/condition-new/sale-%s-100/%s&sort=ranking&order=ASC"
+    # TOP_URL = "https://www.shoppingscanner.com/"
+    TOP_URL = "https://www.shoppingscanner.co.uk/"  # UK ポンドで設定
+    # SEARCH_URL = "https://www.shoppingscanner.com/search/index/condition-new/sale-%s-100/%s&sort=ranking&order=ASC"
+    SEARCH_URL = "https://www.shoppingscanner.co.uk/search/index/condition-new/sale-%s-100/%s&sort=ranking&order=ASC"  # UK ポンドで設定
     search_properties = {
         "QUERY_PARAM": "k",
         "AND_METHOD": "%20"
@@ -368,6 +370,125 @@ class Articture(Curator):
                 data[self.cnt] = [None for c in columns]
                 self.cnt += 1
                 self.next_page = None
+                continue
+
+        return data, columns
+
+
+class DolceAndGabbana(Curator):
+    name = "dolcegabbana.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://www.dolcegabbana.com"
+    SEARCH_URL = "https://www.dolcegabbana.com/ja/search-results%s"
+    search_properties = {
+        "QUERY_PARAM": "q",
+        "AND_METHOD": "+"
+    }
+    structure = [
+        {
+            "units": ".b-product_tile_container",
+            "targets": {
+                "brand": "",
+                "title": ".product_name",
+                "href": ".product_name",
+                # "origin_price": False,
+                "price": ".js-product_price-standard",
+                # "discount_rate": False,
+                "retailer": ""
+            }
+        }
+    ]
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+    more_button = 'js-load_next_page'
+    next_page = True
+
+    def __init__(self):
+        super().__init__()
+        self.driver = Chrome()
+        self.cnt = 0  # アイテム数カウント用
+
+    def search(self, url: str = ""):
+        # _term 毎に振る舞いを変える
+        
+        # 個別のアクションを追記
+        self.driver.access(url)
+        self.driver.wait()
+
+        # timeout 変更
+        self.driver._driver.set_page_load_timeout(500)
+        self.driver._driver.implicitly_wait(500)
+
+        # 言語設定を 日本語/イタリア に
+        self.driver.screenshot()
+        # Sales のポップアップが出ることがあるので閉じる
+        try:
+            self.driver._driver.find_element_by_class_name("fancybox-close").click()
+        except:
+            pass
+        self.driver._driver.find_element_by_class_name("b-language_selector-flyout-title").click()
+        self.driver.screenshot()
+        self.driver._driver.find_element_by_xpath("//a[@aria-label=\"Italy\"]").click()
+        time.sleep(10)
+        self.driver.access(url)
+        self.driver.wait()
+        self.driver.screenshot()
+
+        try:
+            for i in range(0, 50):
+            # for i in range(0, 2):  # TEST
+                self.driver._driver.find_element_by_class_name(self.more_button).click()
+                time.sleep(5)
+        except Exception as e:
+            print("Exception Occured ...", e.args[0])
+        finally:
+            # HTML を取得
+            self.html = self.driver.get_html()
+
+    def activate_search(self, keywords: list = []):
+        if self.next_page is True:
+            """ search 前に URL を作成し、返却する """
+            query = "?{}={}".format(self.search_properties["QUERY_PARAM"], self.search_properties["AND_METHOD"].join(keywords))
+            return self.SEARCH_URL % (query,)
+        else:
+            """ next_page があった場合はそれを返す """
+            return self.next_page
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data = {}
+        for unit in units:
+            try:
+                # 追加プロパティ設定（値）
+                _data = []
+                if any(add_property):
+                    _data = [v for v in add_property.values()]
+                for target, selector in self.get_structure("targets").items():
+                    if selector is False:
+                        _data.append("")
+                    else:
+                        if target == "href":
+                            _href = self.TOP_URL + unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None
+                            _data.append(_href)
+                        elif target == "brand":
+                            _data.append("Dolce&Gabbana")
+                        elif target == "retailer":
+                            _data.append("Dolcegabbana")
+                        else:
+                            _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+                data[self.cnt] = _data
+                self.cnt += 1
+            except Exception as e:
+                print("Exception is Occured", e.args[0])
+                data[self.cnt] = [None for c in columns]
+                self.cnt += 1
                 continue
 
         return data, columns

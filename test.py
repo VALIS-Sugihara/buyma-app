@@ -4,7 +4,7 @@ from ec.channels.retailers import (
     Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire, Ssense, Luisaviaroma,
     Shopbop, Nugnes1920, Harveynichols, Tessabit, Matchesfashion, Biffi, Giglio, Gilt, Articture,
     Antonioli, _24scom, Modaoperandi, Danielloboutique, Raffaellonetwork, Saksfifthavenue,
-    Saksoff5th, Theluxurycloset
+    Saksoff5th, Theluxurycloset, Dolcegabbana
 )
 from ec.channels.malls import BuymaItems
 
@@ -15,7 +15,7 @@ RETAILER_NAMES = (
     "Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles", "Cettire", "Ssense", "Luisaviaroma",
     "Shopbop", "Nugnes1920", "Harveynichols", "Tessabit", "Matchesfashion", "Biffi", "Giglio", "Gilt", "Articture",
     "Antonioli", "_24scom", "Modaoperandi", "Danielloboutique", "Raffaellonetwork", "Saksfifthavenue",
-    "Saksoff5th", "Theluxurycloset"
+    "Saksoff5th", "Theluxurycloset", "Dolcegabbana"
 )
 
 
@@ -414,8 +414,25 @@ class TestRetailers(unittest.TestCase):
             print(e.args[0])
             c.channel.driver.screenshot("/tmp/Theluxurycloset.png")
 
+    def test_Dolcegabbana(self):
+        try:
+            url = "https://www.dolcegabbana.com/ja/%E3%83%AC%E3%83%87%E3%82%A3%E3%83%BC%E3%82%B9/%E3%83%90%E3%83%83%E3%82%B0/%E3%83%90%E3%83%83%E3%82%AF%E3%83%91%E3%83%83%E3%82%AFand%E3%82%A6%E3%82%A8%E3%82%B9%E3%83%88%E3%83%9D%E3%83%BC%E3%83%81/devotion-%E3%82%A6%E3%82%A8%E3%82%B9%E3%83%88%E3%83%9D%E3%83%BC%E3%83%81-%E3%83%A2%E3%83%AB%E3%83%89%E3%83%AC-%E3%83%8A%E3%83%83%E3%83%91%E3%83%AC%E3%82%B6%E3%83%BC-%E3%83%95%E3%83%A5%E3%83%BC%E3%82%B7%E3%83%A3-BB6706A10168H461.html"
+            retailer = Dolcegabbana(url)
+            c = Client(retailer)
+            c.search()
+            data, columns = c.collect()
+
+            # print(data)
+
+            self.assertIsInstance(data, dict)
+            self.assertNotIn(None, data[0])
+
+        except Exception as e:
+            print(e.args[0])
+            c.channel.driver.screenshot("/tmp/Dolcegabbana.png")
+
 
 if __name__ == '__main__':
     # unittest.main()
     t = TestRetailers()
-    t.test_Theluxurycloset()
+    t.test_Dolcegabbana()

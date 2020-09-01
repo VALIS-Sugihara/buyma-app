@@ -15,8 +15,8 @@ class Client():
         self.keyword = "+".join(keywords)
         url = self.channel.activate_search(keywords, **kwargs)
         self.channel.search(url)
-        # self.channel.driver.exit()
         self.scoop()
+        self.channel.driver.exit()
 
     def collect(self, **add_property):
         return self.channel.collect(self, **add_property)
