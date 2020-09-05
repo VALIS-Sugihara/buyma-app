@@ -4,7 +4,7 @@ from ec.channels.retailers import (
     Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire, Ssense, Luisaviaroma,
     Shopbop, Nugnes1920, Harveynichols, Tessabit, Matchesfashion, Biffi, Giglio, Gilt, Articture,
     Antonioli, _24scom, Modaoperandi, Danielloboutique, Raffaellonetwork, Saksfifthavenue,
-    Saksoff5th, Theluxurycloset, Dolcegabbana
+    Saksoff5th, Theluxurycloset, Dolcegabbana, Yoox
 )
 from ec.channels.malls import BuymaItems
 
@@ -15,7 +15,7 @@ RETAILER_NAMES = (
     "Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles", "Cettire", "Ssense", "Luisaviaroma",
     "Shopbop", "Nugnes1920", "Harveynichols", "Tessabit", "Matchesfashion", "Biffi", "Giglio", "Gilt", "Articture",
     "Antonioli", "_24scom", "Modaoperandi", "Danielloboutique", "Raffaellonetwork", "Saksfifthavenue",
-    "Saksoff5th", "Theluxurycloset", "Dolcegabbana"
+    "Saksoff5th", "Theluxurycloset", "Dolcegabbana", "Yoox"
 )
 
 
@@ -431,8 +431,25 @@ class TestRetailers(unittest.TestCase):
             print(e.args[0])
             c.channel.driver.screenshot("/tmp/Dolcegabbana.png")
 
+    def test_Yoox(self):
+        try:
+            url = "https://www.yoox.com/uk/11841342EJ/item#dept=newarrivalswomen&sts=SearchResult&cod10=11841342EJ&sizeId=&sizeName="
+            retailer = Yoox(url)
+            c = Client(retailer)
+            c.search()
+            data, columns = c.collect()
+
+            # print(data)
+
+            self.assertIsInstance(data, dict)
+            self.assertNotIn(None, data[0])
+
+        except Exception as e:
+            print(e.args[0])
+            c.channel.driver.screenshot("/tmp/Yoox.png")
+
 
 if __name__ == '__main__':
     # unittest.main()
     t = TestRetailers()
-    t.test_Dolcegabbana()
+    t.test_Yoox()

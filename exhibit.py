@@ -189,6 +189,8 @@ _/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/_/
                 url = re.sub(ptn, r"\1_1000\2", url)
                 url = re.sub(ptn_, r"https:\1", url)
 
+                print(url)
+
                 response = requests.get(url)
                 if response.status_code == 200:
                     image = response.content
@@ -312,7 +314,7 @@ class Driver(metaclass=ABCMeta):
 
 class Chrome(Driver):
     _driver = None
-    _user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.116 Safari/537.36"
+    _user_agent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36"
 
     def __init__(self):
         options = webdriver.ChromeOptions()
@@ -397,13 +399,20 @@ def main(event, context):
     chrome.screenshot(filename="/tmp/buyma3.png")
 
     """ フォーム入力 """
-    driver.get(Exhibiter.URLS["SELL_URL"])
-    WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located)
-    # h1_text = driver.find_element_by_xpath("/html/body/div[3]/div[2]/div[1]/div/div[1]/div/div/div/div[1]/h1").text
-    h1_text = driver.find_element_by_css_selector("h1.bmm-c-heading__ttl").text
-    if h1_text != "新規出品":
-        chrome.screenshot(filename="/tmp/error_1.png")
-        raise Exception("出品ページへ遷移出来ませんでした")
+    try:
+        driver.get(Exhibiter.URLS["SELL_URL"])
+        WebDriverWait(driver, 15).until(
+            EC.visibility_of_element_located((By.CSS_SELECTOR, "bmm-c-heading__ttl"))
+        )
+        # WebDriverWait(driver, 15).until(EC.presence_of_all_elements_located)
+        # h1_text = driver.find_element_by_xpath("/html/body/div[3]/div[2]/div[1]/div/div[1]/div/div/div/div[1]/h1").text
+        h1_text = driver.find_element_by_css_selector("h1.bmm-c-heading__ttl").text
+        if h1_text != "新規出品":
+            chrome.screenshot(filename="/tmp/error_1.png")
+            raise Exception("出品ページへ遷移出来ませんでした")
+    except Exception as e:
+        print(e.args[0])
+        chrome.screenshot(filename="/tmp/error.png")
 
     # 商品名
     df = pd.read_csv(path)

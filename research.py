@@ -6,18 +6,20 @@ from ec.channels.retailers import (
     Ruelala, Mytheresa, Farfetch, Vitkac, Modes, Forzieri, Mybag, Coggles, Cettire, Ssense, Luisaviaroma,
     Shopbop, Nugnes1920, Harveynichols, Tessabit, Matchesfashion, Biffi, Giglio, Gilt, Articture,
     Antonioli, _24scom, Modaoperandi, Danielloboutique, Raffaellonetwork, Saksfifthavenue,
-    Saksoff5th, Theluxurycloset, Dolcegabbana
+    Saksoff5th, Theluxurycloset, Dolcegabbana, Yoox
 )
 from ec.channels.malls import BuymaItems
 
 import pandas as pd
 import re
+import sys
+
 
 RETAILER_NAMES = (
     "Ruelala", "Mytheresa", "Farfetch", "Vitkac", "Modes", "Forzieri", "Mybag", "Coggles", "Cettire", "Ssense", "Luisaviaroma",
     "Shopbop", "Nugnes1920", "Harveynichols", "Tessabit", "Matchesfashion", "Biffi", "Giglio", "Gilt", "Articture",
     "Antonioli", "_24scom", "Modaoperandi", "Danielloboutique", "Raffaellonetwork", "Saksfifthavenue",
-    "Saksoff5th", "Theluxurycloset", "Dolcegabbana"
+    "Saksoff5th", "Theluxurycloset", "Dolcegabbana", "Yoox"
 )
 
 
@@ -53,22 +55,22 @@ def exchange_retailer_name(retailer_name: str):
     return class_name
 
 
-def test(event, context):
-    keywords = ["celine", "bag"]
-    discount_rate = 50
+def lyst(event, context):
+    keywords = event["keywords"]
+    discount_rate = event["discount_rate"]
+    print(f"*** This is lyst, {keywords}, {discount_rate} ***")
 
     """ Pt.1 Lyst から検索ワード一覧を取得 """
 
-    # lyst = Lyst()
-    # c = Client(lyst)
-    # c.search(keywords=keywords, discount_rate=discount_rate)
-    # data, columns = c.collect()
-    # path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
-    # df_curator = c.to_df(data=data, columns=columns, save=path)
+    lyst = Lyst()
+    c = Client(lyst)
+    c.search(keywords=keywords, discount_rate=discount_rate)
+    data, columns = c.collect()
+    path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
+    df_curator = c.to_df(data=data, columns=columns, save=path)
 
-    # keywords = ["FURLA"]
-    path = "~/Desktop/Lyst.com&celine+bag.collected.csv"
-    df_curator = pd.read_csv(path)
+    # path = "~/Desktop/Lyst.com&celine+bag.collected.csv"
+    # df_curator = pd.read_csv(path)
     print(df_curator.head())
 
     """ Pt.2 取得先のリテーラーから必要情報を取得 """
@@ -135,22 +137,23 @@ def test(event, context):
     return True
 
 
-def sub(event, context):
-    keywords = ["gucci", "bag"]
-    discount_rate = 0
+def shoppingscanner(event, context):
+    keywords = event["keywords"]
+    discount_rate = event["discount_rate"]
+    print(f"*** This is shoppingscanner, {keywords}, {discount_rate} ***")
 
     """ Pt.1 Lyst から検索ワード一覧を取得 """
 
-    shoppingscanner = Shoppingscanner()
-    c = Client(shoppingscanner)
-    c.search(keywords=keywords, discount_rate=discount_rate)
-    data, columns = c.collect()
-    path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
-    df_curator = c.to_df(data=data, columns=columns, save=path)
+    # shoppingscanner = Shoppingscanner()
+    # c = Client(shoppingscanner)
+    # c.search(keywords=keywords, discount_rate=discount_rate)
+    # data, columns = c.collect()
+    # path = "~/Desktop/%s&%s.collected.csv" % (c.channel.name, "+".join(keywords),)
+    # df_curator = c.to_df(data=data, columns=columns, save=path)
 
-    # keywords = ["FURLA"]
-    # path = "~/Desktop/Shoppingscanner.com&loewe+bag.collected.csv"
-    # df_curator = pd.read_csv(path)
+    path = "~/Desktop/Shoppingscanner.com&fendi+bag.collected.csv"
+    df_curator = pd.read_csv(path)
+
     print(df_curator.head())
 
     """ Pt.2 取得先のリテーラーから必要情報を取得 """
@@ -220,7 +223,8 @@ def sub(event, context):
 
 
 def articture(event, context):
-    keywords = ["set"]
+    keywords = event["keywords"]
+    print(f"*** This is articture, {keywords} ***")
 
     """ Pt.1 Articture の検索結果一覧を取得 """
 
@@ -298,7 +302,8 @@ def articture(event, context):
 
 
 def dandg(event, context):
-    keywords = ["bag"]
+    keywords = event["keywords"]
+    print(f"*** This is dandg, {keywords} ***")
 
     """ Pt.1 Lyst から検索ワード一覧を取得 """
 
@@ -381,4 +386,42 @@ def dandg(event, context):
     return True
 
 
-sub(1,1)
+if __name__ == "__main__":
+
+    method_name = input("Enter method name:")
+    keywords = input("Enter keywords:").split()
+    discount_rate = int(input("Enter discount rate:"))
+
+    # if len(sys.argv) <= 1:
+    #     print("*** 第一引数にメソッドを指定して下さい ***")
+    #     exit()
+    # if 2 <= len(sys.argv) < 3:
+    #     print("*** 第二引数にキーワードを指定して下さい ***")
+    #     exit()
+
+    # method_name = sys.argv[1]
+    # keywords = sys.argv[2].split()
+    # discount_rate = int(sys.argv[3]) if len(sys.argv) >= 4 else 0
+
+    print(f"""
+    メソッド：{method_name}
+    キーワード：{keywords}
+    割引率：{discount_rate}
+    で実行します.
+    """)
+
+    event = {
+        "keywords": keywords,
+        "discount_rate": discount_rate
+    }
+
+    if method_name == "lyst":
+        lyst(event, None)
+    elif method_name == "shoppingscanner":
+        shoppingscanner(event, None)
+    elif method_name == "articture":
+        articture(event, None)
+    elif method_name == "dandg":
+        dandg(event, None)
+    else:
+        print("メソッドがありません")

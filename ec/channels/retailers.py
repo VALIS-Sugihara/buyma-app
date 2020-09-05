@@ -206,14 +206,14 @@ class Farfetch(Retailer):
     TOP_URL = "https://www.farfetch.com/"
     structure = [
         {
-            "units": "#slice-pdp > div > div._6c4acd",
+            "units": "#content",
             "targets": {
-                "retailer_brand": "._e87472._346238._e4b5ec",
-                "retailer_title": "._d85b45._d85b45._1851d6",
+                "retailer_brand": "#bannerComponents-Container > h1 > span:nth-child(1)",
+                "retailer_title": "#bannerComponents-Container > h1 > span:nth-child(2)",
                 "retailer_description": "[data-tstid='productDetails']",
                 "retailer_price": "[data-tstid='priceInfo-onsale']",
                 "retailer_origin_price": "[data-tstid='priceInfo-original']",
-                "retailer_sku": "._9d3f24._da3196 ._4919a3._da3196 ._84497d._e7b42f ._d85b45",
+                "retailer_sku": "",  # 作成
                 "retailer_images": "[itemprop='image']",
                 # "colors": "",
                 # "sizes": ""
@@ -226,7 +226,7 @@ class Farfetch(Retailer):
 
     def __init__(self, url):
         self.url = url
-        self.driver = Requests()
+        self.driver = Chrome()
 
     def collect(self, client, **add_property):
         units = client.soup.select(self.get_structure("units"))
@@ -249,6 +249,15 @@ class Farfetch(Retailer):
                 else:
                     if target == "href":
                         _data.append(unit.select_one(selector)["href"] if unit.select_one(selector) is not None else None)
+                    elif target == "retailer_sku":
+                        # brand + title を sku に設定
+                        _selector = self.get_structure("targets")["retailer_brand"]
+                        _brand = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _data.append(_brand + " " + _title)
                     elif target == "retailer_price":
                         # SALE price がなければ OriginPrice を入れる
                         price = unit.select_one(selector) if unit.select_one(selector) is not None else unit.select_one(self.get_structure("targets")["retailer_origin_price"])
@@ -1128,10 +1137,19 @@ class Biffi(Retailer):
                             _data.append(price.get_text().strip())
                         else:
                             _data.append(None)
+                    # elif target == "retailer_sku":
+                    #     # SKU 切り出し
+                    #     sku = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None
+                    #     _data.append(sku)
                     elif target == "retailer_sku":
-                        # SKU 切り出し
-                        sku = unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None
-                        _data.append(sku)
+                        # brand + title を sku に設定
+                        _selector = self.get_structure("targets")["retailer_brand"]
+                        _brand = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _data.append(_brand + " " + _title)
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
                         img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
@@ -2006,8 +2024,10 @@ class Theluxurycloset(Retailer):
         _xpath = "/html/body/div[1]/div[2]/div[2]/div/div/div[3]/div[1]/div/div[1]/div/div/div/div[2]/div"
         self.driver._driver.find_element_by_xpath(_xpath).click()
         try:
-            self.driver._driver.find_element_by_class_name(cname).click()
-            self.driver._driver.find_element_by_class_name(cname).click()
+            # self.driver._driver.find_element_by_class_name(cname).click()
+            # self.driver._driver.find_element_by_class_name(cname).click()
+            # TODO::要確認
+            pass
         except:
             pass
 
@@ -2123,6 +2143,82 @@ class Dolcegabbana(Retailer):
                     elif target == "retailer_images":
                         img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
                         img_urls = "@@@".join([img_url[selector[1]] for img_url in img_urls]) if any(img_urls) else None
+                        _data.append(img_urls)
+                    else:
+                        _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
+            data[i] = _data
+            print(self.name, _data)
+            i += 1
+        return data, columns
+
+
+class Yoox(Retailer):
+    name = "yoox.com"
+    keyword = ""
+    html = None
+    TOP_URL = "https://www.yoox.com"
+    structure = [
+        {
+            "units": "#itemContent",
+            "targets": {
+                "retailer_brand": "a[data-tracking-label='brand']",
+                "retailer_title": "a[data-tracking-label='category']",
+                "retailer_description": ".row.text-size-default.info-2cols",
+                "retailer_price": "span[itemprop='price']",
+                "retailer_origin_price": "span.text-secondary", 
+                "retailer_sku": "",  # 作成する
+                "retailer_images": ("#itemThumbs img", "src",),
+                # "colors": "",
+                # "sizes": ""
+            }
+        }
+    ]
+    more_button = ""
+    _term = 0  # structure の層数に合わせて振る舞いを変えるための現状層を示す
+    max_term = 0
+
+    def __init__(self, url:str=""):
+        self.url = url
+        self.driver = Chrome()
+
+    def collect(self, client, **add_property):
+        units = client.soup.select(self.get_structure("units"))
+        # 追加プロパティ設定（カラム）
+        _columns = []
+        if any(add_property):
+            _columns = [k for k in add_property.keys()]
+        columns = _columns + [k for k in self.get_structure("targets").keys()]
+
+        data, i = {}, 0
+        for unit in units:
+            # 追加プロパティ設定（値）
+            _data = []
+            if any(add_property):
+                _data = [v for v in add_property.values()]
+            for target, selector in self.get_structure("targets").items():
+                if selector is False:
+                    _data.append("")
+                else:
+                    if target == "retailer_origin_price":
+                        # retailer_price を入れる
+                        _selector = self.get_structure("targets")["retailer_price"]
+                        price = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else None
+                        _data.append(price)
+                    elif target == "retailer_sku":
+                        # brand + title を sku に設定
+                        _selector = self.get_structure("targets")["retailer_brand"]
+                        _brand = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _selector = self.get_structure("targets")["retailer_title"]
+                        _title = unit.select_one(_selector).get_text().strip() if unit.select_one(_selector) is not None else ""
+
+                        _data.append(_brand + " " + _title)
+                    elif target == "retailer_images":
+                        img_urls = unit.select(selector[0]) if any(unit.select(selector[0])) else []
+                        # 下記形式なのでカット
+                        # https://www.yoox.com/images/items/45/45496777ns_14_f.jpg?width=90&height=115&impolicy=crop&gravity=Center 
+                        ptn = r"^(http.+)(\?.+)?$"
+                        img_urls = "@@@".join([re.sub(ptn, r"\1", img_url[selector[1]]) for img_url in img_urls]) if any(img_urls) else None
                         _data.append(img_urls)
                     else:
                         _data.append(unit.select_one(selector).get_text().strip() if unit.select_one(selector) is not None else None)
